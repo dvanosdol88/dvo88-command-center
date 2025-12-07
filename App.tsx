@@ -11,28 +11,17 @@ import GoalDesignerView from './components/GoalDesignerView';
 import ClientJourneyView from './components/ClientJourneyView';
 import ChatWidget from './components/ChatWidget';
 import { LayoutGrid, BarChart2, Table, Network, Save, Layers } from 'lucide-react';
+import { addItem, subscribeToItems } from './services/db';
 
-// Helper for local storage
-const STORAGE_KEY = 'ria_command_center_weights';
-
-type ModuleState = 'vendors' | 'research' | 'goals' | 'journey'; 
+type ModuleState = 'vendors' | 'research' | 'goals' | 'journey';
 
 const App: React.FC = () => {
   const [activeModule, setActiveModule] = useState<ModuleState>('vendors');
   const [activeVendorView, setActiveVendorView] = useState<ViewState>('dashboard');
   const [selectedVendorName, setSelectedVendorName] = useState<string | null>(null);
-  
-  // Initialize state from local storage or defaults
+
+  // Initialize state with defaults
   const [weights, setWeights] = useState<WeightState>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse saved weights");
-      }
-    }
-    // Default fallback
     const defaults: WeightState = {};
     CATEGORIES.forEach(c => defaults[c.id] = c.defaultWeight * 100);
     return defaults;
@@ -40,18 +29,33 @@ const App: React.FC = () => {
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
 
-  // Persist weights whenever they change
+  // Real-time subscription to Firestore
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(weights));
-    setSaveStatus('saved');
-    const timer = setTimeout(() => setSaveStatus('idle'), 2000);
-    return () => clearTimeout(timer);
-  }, [weights]);
+    const unsubscribe = subscribeToItems('weights', (items: any[]) => {
+      setWeights(prevWeights => {
+        const newWeights = { ...prevWeights };
+        // Apply updates from the database
+        // Assuming items are appended updates: { categoryId: string, value: number }
+        items.forEach(item => {
+          if (item.categoryId && typeof item.value === 'number') {
+            newWeights[item.categoryId] = item.value;
+          }
+        });
+        return newWeights;
+      });
+
+      // Trigger save feedback
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Calculate results based on current weights
   const results: VendorResult[] = useMemo(() => {
     const currentTotalWeight = (Object.values(weights) as number[]).reduce((a, b) => a + b, 0);
-    
+
     const mapped = VENDORS.map(vendor => {
       let rawScore = 0;
       CATEGORIES.forEach((cat, index) => {
@@ -60,8 +64,8 @@ const App: React.FC = () => {
         rawScore += score * w;
       });
 
-      const normalized = currentTotalWeight > 0 
-        ? (rawScore / (currentTotalWeight / 100)) 
+      const normalized = currentTotalWeight > 0
+        ? (rawScore / (currentTotalWeight / 100))
         : 0;
 
       return {
@@ -73,22 +77,26 @@ const App: React.FC = () => {
     return mapped.sort((a, b) => b.finalScore - a.finalScore);
   }, [weights]);
 
-  const handleWeightChange = (id: string, value: number) => {
-    setWeights(prev => ({ ...prev, [id]: value }));
+  const handleWeightChange = async (id: string, value: number) => {
+    // Instead of local state, write to Firebase
+    try {
+      await addItem('weights', { categoryId: id, value });
+    } catch (error) {
+      console.error("Error saving weight:", error);
+    }
   };
 
-  const selectedVendor = useMemo(() => 
-    results.find(r => r.name === selectedVendorName), 
-  [results, selectedVendorName]);
+  const selectedVendor = useMemo(() =>
+    results.find(r => r.name === selectedVendorName),
+    [results, selectedVendorName]);
 
   const TopNavButton = ({ id, label }: { id: ModuleState, label: string }) => (
     <button
       onClick={() => setActiveModule(id)}
-      className={`px-4 py-1.5 rounded-md font-bold text-sm transition-all ${
-        activeModule === id 
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
+      className={`px-4 py-1.5 rounded-md font-bold text-sm transition-all ${activeModule === id
+          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
           : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-      }`}
+        }`}
     >
       {label}
     </button>
@@ -100,11 +108,10 @@ const App: React.FC = () => {
         setActiveVendorView(id);
         setSelectedVendorName(null); // Clear detail view when switching main views
       }}
-      className={`flex flex-col items-center gap-1.5 p-3 rounded-lg transition-all w-16 group relative ${
-        activeVendorView === id && !selectedVendorName
-          ? 'text-blue-400 bg-blue-900/20 shadow-[inset_3px_0_0_0_#3b82f6]' 
+      className={`flex flex-col items-center gap-1.5 p-3 rounded-lg transition-all w-16 group relative ${activeVendorView === id && !selectedVendorName
+          ? 'text-blue-400 bg-blue-900/20 shadow-[inset_3px_0_0_0_#3b82f6]'
           : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800'
-      }`}
+        }`}
       title={label}
     >
       <Icon size={20} className={activeVendorView === id ? 'stroke-[2.5px]' : 'stroke-2'} />
@@ -114,7 +121,7 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-slate-900 text-slate-200">
-      
+
       {/* Header */}
       <header className="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center shadow-lg z-20 shrink-0">
         <div className="flex items-center gap-3">
@@ -133,7 +140,7 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <nav className="flex gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
           <TopNavButton id="vendors" label="Vendors" />
           <TopNavButton id="research" label="AI Research" />
@@ -144,33 +151,33 @@ const App: React.FC = () => {
 
       {/* Main Container */}
       <div className="flex-1 flex overflow-hidden relative">
-        
+
         {/* Module Content */}
         {activeModule === 'vendors' && (
           <>
             {/* View Content */}
             <main className="flex-1 overflow-hidden relative bg-slate-900/50">
-              
+
               {selectedVendor ? (
-                <VendorDetail 
-                    vendor={selectedVendor} 
-                    weights={weights} 
-                    onBack={() => setSelectedVendorName(null)} 
+                <VendorDetail
+                  vendor={selectedVendor}
+                  weights={weights}
+                  onBack={() => setSelectedVendorName(null)}
                 />
               ) : (
                 <>
                   {activeVendorView === 'dashboard' && (
-                    <Dashboard 
-                      weights={weights} 
-                      onWeightChange={handleWeightChange} 
-                      results={results} 
+                    <Dashboard
+                      weights={weights}
+                      onWeightChange={handleWeightChange}
+                      results={results}
                     />
                   )}
                   {activeVendorView === 'cards' && (
-                    <VendorCards 
-                        results={results} 
-                        weights={weights} 
-                        onSelectVendor={(v) => setSelectedVendorName(v.name)}
+                    <VendorCards
+                      results={results}
+                      weights={weights}
+                      onSelectVendor={(v) => setSelectedVendorName(v.name)}
                     />
                   )}
                   {activeVendorView === 'matrix' && <Matrix />}
@@ -191,15 +198,15 @@ const App: React.FC = () => {
         )}
 
         {activeModule === 'research' && (
-            <ResearchView />
+          <ResearchView />
         )}
 
         {activeModule === 'goals' && (
-            <GoalDesignerView />
+          <GoalDesignerView />
         )}
 
         {activeModule === 'journey' && (
-            <ClientJourneyView />
+          <ClientJourneyView />
         )}
 
       </div>
