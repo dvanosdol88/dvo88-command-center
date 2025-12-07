@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { VendorResult, WeightState } from '../types';
 import { NARRATIVES, CATEGORIES } from '../constants';
-import { ArrowLeft, Save, Sparkles, Check, X, Loader2, ZoomIn, XIcon, Settings } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, Check, X, Loader2, ZoomIn, XIcon, Settings, Plus } from 'lucide-react';
 import { getVendorInsight } from '../services/geminiService';
 import ImageUploader from './ImageUploader';
+import EditableText from './EditableText';
+import { vendorAPI, notesAPI } from '../services/apiService';
 
 interface VendorDetailProps {
     vendor: VendorResult;
@@ -57,6 +59,13 @@ const VENDOR_SCREENSHOTS: Record<string, string[]> = {
 const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) => {
     const narrative = NARRATIVES[vendor.name];
 
+    // Editable Vendor Data State
+    const [vendorData, setVendorData] = useState({
+        pros: narrative?.pros || [],
+        cons: narrative?.cons || [],
+        bestFor: narrative?.bestFor || ''
+    });
+
     // Persistent Notes State
     const [notes, setNotes] = useState(() => {
         return localStorage.getItem(`vendor_notes_${vendor.name}`) || '';
@@ -75,17 +84,59 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
     const [backImages, setBackImages] = useState<string[]>([]);
     const [refreshKey, setRefreshKey] = useState(0);
 
+    // Load vendor data from remote storage
+    useEffect(() => {
+        const loadVendorData = async () => {
+            try {
+                const data = await vendorAPI.get(vendor.name);
+                if (data.data) {
+                    setVendorData(data.data);
+                }
+            } catch (error) {
+                // Use default narrative data
+                console.log('Using default narrative data');
+            }
+        };
+        loadVendorData();
+    }, [vendor.name]);
+
+    // Load notes from remote storage
+    useEffect(() => {
+        const loadNotes = async () => {
+            try {
+                const data = await notesAPI.get(vendor.name);
+                if (data.notes) {
+                    setNotes(data.notes);
+                }
+            } catch (error) {
+                // Use local storage fallback
+                const localNotes = localStorage.getItem(`vendor_notes_${vendor.name}`) || '';
+                setNotes(localNotes);
+            }
+        };
+        loadNotes();
+    }, [vendor.name]);
+
     useEffect(() => {
         // Load back images
         setBackImages(loadVendorImages(vendor.name, 'back'));
     }, [vendor.name, refreshKey]);
 
+    // Save notes to remote storage
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
             if (notes !== localStorage.getItem(`vendor_notes_${vendor.name}`)) {
                 setSaveStatus('saving');
                 localStorage.setItem(`vendor_notes_${vendor.name}`, notes);
-                setTimeout(() => setSaveStatus('saved'), 500);
+
+                try {
+                    await notesAPI.save(vendor.name, notes);
+                    setSaveStatus('saved');
+                } catch (error) {
+                    console.error('Failed to save notes to remote storage');
+                    setSaveStatus('saved'); // Still show saved for local storage
+                }
+
                 setTimeout(() => setSaveStatus('idle'), 2000);
             }
         }, 1000);
@@ -106,6 +157,65 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
     const handleUpdateImages = (images: string[]) => {
         setBackImages(images);
         setRefreshKey(prev => prev + 1);
+    };
+
+    // Save vendor data to remote storage
+    const saveVendorData = async (data: typeof vendorData) => {
+        try {
+            await vendorAPI.save(vendor.name, data);
+            console.log('Vendor data saved to remote storage');
+        } catch (error) {
+            console.error('Failed to save vendor data:', error);
+        }
+    };
+
+    // Handlers for editable fields
+    const handleBestForChange = async (newValue: string) => {
+        const newData = { ...vendorData, bestFor: newValue };
+        setVendorData(newData);
+        await saveVendorData(newData);
+    };
+
+    const handleAddPro = async (newPro: string) => {
+        const newData = { ...vendorData, pros: [...vendorData.pros, newPro] };
+        setVendorData(newData);
+        await saveVendorData(newData);
+    };
+
+    const handleUpdatePro = async (index: number, newValue: string) => {
+        const newPros = [...vendorData.pros];
+        newPros[index] = newValue;
+        const newData = { ...vendorData, pros: newPros };
+        setVendorData(newData);
+        await saveVendorData(newData);
+    };
+
+    const handleRemovePro = async (index: number) => {
+        const newPros = vendorData.pros.filter((_, i) => i !== index);
+        const newData = { ...vendorData, pros: newPros };
+        setVendorData(newData);
+        await saveVendorData(newData);
+    };
+
+    const handleAddCon = async (newCon: string) => {
+        const newData = { ...vendorData, cons: [...vendorData.cons, newCon] };
+        setVendorData(newData);
+        await saveVendorData(newData);
+    };
+
+    const handleUpdateCon = async (index: number, newValue: string) => {
+        const newCons = [...vendorData.cons];
+        newCons[index] = newValue;
+        const newData = { ...vendorData, cons: newCons };
+        setVendorData(newData);
+        await saveVendorData(newData);
+    };
+
+    const handleRemoveCon = async (index: number) => {
+        const newCons = vendorData.cons.filter((_, i) => i !== index);
+        const newData = { ...vendorData, cons: newCons };
+        setVendorData(newData);
+        await saveVendorData(newData);
     };
 
     // Combine default and custom screenshots
@@ -202,30 +312,88 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                 {/* Best For Card */}
                                 <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-lg">
                                     <h3 className="text-xs uppercase font-bold text-blue-400 mb-2">Best For</h3>
-                                    <p className="text-slate-200 italic">{narrative.bestFor}</p>
+                                    <EditableText
+                                        value={vendorData.bestFor}
+                                        onSave={handleBestForChange}
+                                        className="text-slate-200 italic"
+                                        multiline
+                                        placeholder="Click to add 'Best For' description"
+                                    />
                                 </div>
 
                                 {/* Pros/Cons */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-lg">
-                                        <h4 className="text-xs uppercase font-bold text-emerald-500 mb-3 flex items-center gap-2">
-                                            <Check size={14} /> Strengths
+                                        <h4 className="text-xs uppercase font-bold text-emerald-500 mb-3 flex items-center gap-2 justify-between">
+                                            <span className="flex items-center gap-2">
+                                                <Check size={14} /> Strengths
+                                            </span>
+                                            <button
+                                                onClick={() => handleAddPro('New strength')}
+                                                className="p-1 hover:bg-emerald-600/20 rounded transition"
+                                                title="Add strength"
+                                            >
+                                                <Plus size={14} />
+                                            </button>
                                         </h4>
-                                        <ul className="space-y-2">
-                                            {narrative.pros.map((p, i) => (
-                                                <li key={i} className="text-xs text-slate-300 leading-snug">• {p}</li>
+                                        <div className="space-y-2">
+                                            {vendorData.pros.map((p, i) => (
+                                                <div key={i} className="flex items-start gap-2 group">
+                                                    <span className="text-emerald-500 mt-1">•</span>
+                                                    <div className="flex-1">
+                                                        <EditableText
+                                                            value={p}
+                                                            onSave={(newValue) => handleUpdatePro(i, newValue)}
+                                                            className="text-xs text-slate-300 leading-snug"
+                                                            placeholder="Click to edit"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleRemovePro(i)}
+                                                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-600/20 rounded transition text-red-500"
+                                                        title="Remove"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-lg">
-                                        <h4 className="text-xs uppercase font-bold text-rose-500 mb-3 flex items-center gap-2">
-                                            <X size={14} /> Weaknesses
+                                        <h4 className="text-xs uppercase font-bold text-rose-500 mb-3 flex items-center gap-2 justify-between">
+                                            <span className="flex items-center gap-2">
+                                                <X size={14} /> Weaknesses
+                                            </span>
+                                            <button
+                                                onClick={() => handleAddCon('New weakness')}
+                                                className="p-1 hover:bg-rose-600/20 rounded transition"
+                                                title="Add weakness"
+                                            >
+                                                <Plus size={14} />
+                                            </button>
                                         </h4>
-                                        <ul className="space-y-2">
-                                            {narrative.cons.map((c, i) => (
-                                                <li key={i} className="text-xs text-slate-400 leading-snug">• {c}</li>
+                                        <div className="space-y-2">
+                                            {vendorData.cons.map((c, i) => (
+                                                <div key={i} className="flex items-start gap-2 group">
+                                                    <span className="text-rose-500 mt-1">•</span>
+                                                    <div className="flex-1">
+                                                        <EditableText
+                                                            value={c}
+                                                            onSave={(newValue) => handleUpdateCon(i, newValue)}
+                                                            className="text-xs text-slate-400 leading-snug"
+                                                            placeholder="Click to edit"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleRemoveCon(i)}
+                                                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-600/20 rounded transition text-red-500"
+                                                        title="Remove"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                 </div>
 
