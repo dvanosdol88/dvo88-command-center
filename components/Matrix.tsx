@@ -1,12 +1,18 @@
-import React from 'react';
-import { CATEGORIES, VENDORS } from '../constants';
+import React, { useState } from 'react';
+import { CATEGORIES } from '../constants';
 import { Download } from 'lucide-react';
+import { VendorResult } from '../types';
 
-const Matrix: React.FC = () => {
+interface MatrixProps {
+    data: VendorResult[];
+    onUpdateScore: (vendorName: string, catIndex: number, val: number) => void;
+}
+
+const Matrix: React.FC<MatrixProps> = ({ data, onUpdateScore }) => {
   const downloadCSV = () => {
-    let csv = "Vendor," + CATEGORIES.map(c => c.name).join(",") + "\n";
-    VENDORS.forEach(v => {
-      csv += `"${v.name}",${v.scores.join(",")}\n`;
+    let csv = "Vendor," + CATEGORIES.map(c => c.name).join(",") + ",Total Score\n";
+    data.forEach(v => {
+      csv += `"${v.name}",${v.scores.join(",")},${v.finalScore}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -38,10 +44,11 @@ const Matrix: React.FC = () => {
                     {c.name}
                   </th>
                 ))}
+                <th className="p-4 border-b border-slate-700 bg-slate-900 text-center text-accent-gold">Score</th>
               </tr>
             </thead>
             <tbody className="text-slate-300 divide-y divide-slate-800">
-              {VENDORS.map((vendor, vIndex) => (
+              {data.map((vendor, vIndex) => (
                 <tr key={vIndex} className="hover:bg-slate-700/50 transition">
                   <td className="p-4 font-bold text-blue-400 border-r border-slate-800 bg-slate-800/30 sticky left-0">
                     {vendor.name}
@@ -52,11 +59,21 @@ const Matrix: React.FC = () => {
                     if (score <= 5) colorClass = 'text-rose-400 opacity-80';
                     
                     return (
-                      <td key={sIndex} className={`p-4 text-center ${colorClass}`}>
-                        {score}
+                      <td key={sIndex} className="p-2 text-center border-l border-slate-800/50">
+                        <input 
+                            type="number"
+                            min="1"
+                            max="10"
+                            value={score}
+                            onChange={(e) => onUpdateScore(vendor.name, sIndex, parseInt(e.target.value) || 0)}
+                            className={`w-12 text-center bg-transparent focus:bg-slate-700 border border-transparent focus:border-slate-500 rounded outline-none appearance-none ${colorClass}`}
+                        />
                       </td>
                     );
                   })}
+                  <td className="p-4 font-bold text-accent-gold text-lg text-center border-l border-slate-700">
+                      {vendor.finalScore}
+                  </td>
                 </tr>
               ))}
             </tbody>

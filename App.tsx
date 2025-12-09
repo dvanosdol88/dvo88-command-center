@@ -7,17 +7,17 @@ import VendorDetail from './components/VendorDetail';
 import Matrix from './components/Matrix';
 import DependencyMap from './components/DependencyMap';
 import ResearchView from './components/ResearchView';
-import GoalDesignerView from './components/GoalDesignerView';
-import ClientJourneyView from './components/ClientJourneyView';
+import MiniAppsView from './components/MiniAppsView';
 import ChatWidget from './components/ChatWidget';
 import { LayoutGrid, BarChart2, Table, Network, Save, Layers } from 'lucide-react';
 import { addItem, subscribeToItems } from './services/db';
+import { vendorAPI } from './services/apiService';
 
-type ModuleState = 'vendors' | 'research' | 'goals' | 'journey';
+type ModuleState = 'vendors' | 'research' | 'miniapps';
 
 const App: React.FC = () => {
   const [activeModule, setActiveModule] = useState<ModuleState>('vendors');
-  const [activeVendorView, setActiveVendorView] = useState<ViewState>('dashboard');
+  const [activeVendorView, setActiveVendorView] = useState<ViewState>('cards');
   const [selectedVendorName, setSelectedVendorName] = useState<string | null>(null);
 
   // Initialize state with defaults
@@ -28,14 +28,13 @@ const App: React.FC = () => {
   });
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
+  const [vendorDataMap, setVendorDataMap] = useState<Record<string, any>>({});
 
   // Real-time subscription to Firestore
   useEffect(() => {
-    const unsubscribe = subscribeToItems('weights', (items: any[]) => {
+    const unsubscribeWeights = subscribeToItems('weights', (items: any[]) => {
       setWeights(prevWeights => {
         const newWeights = { ...prevWeights };
-        // Apply updates from the database
-        // Assuming items are appended updates: { categoryId: string, value: number }
         items.forEach(item => {
           if (item.categoryId && typeof item.value === 'number') {
             newWeights[item.categoryId] = item.value;
@@ -43,24 +42,50 @@ const App: React.FC = () => {
         });
         return newWeights;
       });
-
-      // Trigger save feedback
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     });
 
-    return () => unsubscribe();
+    const unsubscribeVendors = subscribeToItems('vendors', (items: any[]) => {
+      if (items.length === 0) {
+          // Identify if we need to seed (only if valid empty state)
+          // For safety, we can check if it's the *first* load or just empty.
+          // here we assume if it's empty, we seed defaults.
+          console.log("Seeding vendors...");
+          vendorAPI.seed(VENDORS);
+      }
+      
+      const map: Record<string, any> = {};
+      items.forEach(item => {
+        if (item.name) {
+            map[item.name] = item;
+        }
+      });
+      setVendorDataMap(map);
+    });
+
+    return () => {
+        unsubscribeWeights();
+        unsubscribeVendors();
+    };
   }, []);
 
-  // Calculate results based on current weights
+  // Calculate results based on current weights and dynamic scores
   const results: VendorResult[] = useMemo(() => {
     const currentTotalWeight = (Object.values(weights) as number[]).reduce((a, b) => a + b, 0);
 
-    const mapped = VENDORS.map(vendor => {
+    // Use dynamic vendor list from Firestore
+    // If empty (loading), we return empty to avoid stale static data
+    const currentVendors = Object.values(vendorDataMap);
+
+    const mapped = currentVendors.map(vendor => {
       let rawScore = 0;
+      // Scores are already in the vendor object from Firestore
+      const currentScores = vendor.scores || [];
+
       CATEGORIES.forEach((cat, index) => {
         const w = (weights[cat.id] || 0) / 100;
-        const score = vendor.scores[index];
+        const score = currentScores[index] !== undefined ? currentScores[index] : 0;
         rawScore += score * w;
       });
 
@@ -70,20 +95,47 @@ const App: React.FC = () => {
 
       return {
         ...vendor,
+        scores: currentScores,
         finalScore: parseFloat(normalized.toFixed(2))
       };
     });
 
     return mapped.sort((a, b) => b.finalScore - a.finalScore);
-  }, [weights]);
+  }, [weights, vendorDataMap]);
 
   const handleWeightChange = async (id: string, value: number) => {
-    // Instead of local state, write to Firebase
     try {
       await addItem('weights', { categoryId: id, value });
     } catch (error) {
       console.error("Error saving weight:", error);
     }
+  };
+
+  const handleScoreUpdate = async (vendorName: string, categoryIndex: number, value: number) => {
+      const vendor = results.find(v => v.name === vendorName);
+      if (!vendor) return;
+
+      const newScores = [...vendor.scores];
+      newScores[categoryIndex] = value;
+
+      try {
+          await vendorAPI.save(vendorName, { scores: newScores, name: vendorName });
+      } catch (error) {
+          console.error("Error saving score:", error);
+      }
+  };
+
+  const handleAddVendor = async () => {
+      const name = prompt("Enter new vendor name:");
+      if (name) {
+          await vendorAPI.add(name);
+      }
+  };
+
+  const handleDeleteVendor = async (name: string) => {
+      if (confirm(`Are you sure you want to delete ${name}?`)) {
+          await vendorAPI.delete(name);
+      }
   };
 
   const selectedVendor = useMemo(() =>
@@ -94,8 +146,8 @@ const App: React.FC = () => {
     <button
       onClick={() => setActiveModule(id)}
       className={`px-4 py-1.5 rounded-md font-bold text-sm transition-all ${activeModule === id
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-          : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+        ? 'bg-evergreen text-white shadow-lg shadow-evergreen/50'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
         }`}
     >
       {label}
@@ -109,8 +161,8 @@ const App: React.FC = () => {
         setSelectedVendorName(null); // Clear detail view when switching main views
       }}
       className={`flex flex-col items-center gap-1.5 p-3 rounded-lg transition-all w-16 group relative ${activeVendorView === id && !selectedVendorName
-          ? 'text-blue-400 bg-blue-900/20 shadow-[inset_3px_0_0_0_#3b82f6]'
-          : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800'
+        ? 'text-accent-gold bg-slate-800 shadow-[inset_3px_0_0_0_#af8a49]'
+        : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800'
         }`}
       title={label}
     >
@@ -125,15 +177,15 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center shadow-lg z-20 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded flex items-center justify-center font-bold text-white shadow">
+          <div className="w-8 h-8 bg-gradient-to-br from-evergreen-light to-evergreen rounded flex items-center justify-center font-bold text-white shadow">
             R
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-wide text-white">RIA COMMAND CENTER</h1>
+            <h1 className="text-lg font-heading font-extrabold tracking-wide text-white">RIA COMMAND CENTER</h1>
             <div className="text-[10px] uppercase tracking-widest text-slate-400 flex items-center gap-2">
               Vendor Intelligence Module
               {saveStatus === 'saved' && (
-                <span className="text-emerald-500 flex items-center gap-1 animate-fade-in">
+                <span className="text-accent-green flex items-center gap-1 animate-fade-in">
                   <Save size={8} /> Saved
                 </span>
               )}
@@ -144,8 +196,7 @@ const App: React.FC = () => {
         <nav className="flex gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800">
           <TopNavButton id="vendors" label="Vendors" />
           <TopNavButton id="research" label="AI Research" />
-          <TopNavButton id="goals" label="Goal Designer" />
-          <TopNavButton id="journey" label="Client Journey" />
+          <TopNavButton id="miniapps" label="mini-apps & infographics" />
         </nav>
       </header>
 
@@ -178,9 +229,16 @@ const App: React.FC = () => {
                       results={results}
                       weights={weights}
                       onSelectVendor={(v) => setSelectedVendorName(v.name)}
+                      onAddVendor={handleAddVendor}
+                      onDeleteVendor={handleDeleteVendor}
                     />
                   )}
-                  {activeVendorView === 'matrix' && <Matrix />}
+                  {activeVendorView === 'matrix' && (
+                    <Matrix
+                        data={results}
+                        onUpdateScore={handleScoreUpdate}
+                    />
+                  )}
                   {activeVendorView === 'dependency' && <DependencyMap />}
                 </>
               )}
@@ -201,12 +259,8 @@ const App: React.FC = () => {
           <ResearchView />
         )}
 
-        {activeModule === 'goals' && (
-          <GoalDesignerView />
-        )}
-
-        {activeModule === 'journey' && (
-          <ClientJourneyView />
+        {activeModule === 'miniapps' && (
+          <MiniAppsView />
         )}
 
       </div>

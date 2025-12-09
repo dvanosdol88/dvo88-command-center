@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { VendorResult, WeightState } from '../types';
 import { NARRATIVES, CATEGORIES } from '../constants';
-import { ArrowLeft, Save, Sparkles, Check, X, Loader2, ZoomIn, XIcon, Settings, Plus } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, Check, X, Loader2, ZoomIn, Settings, Plus } from 'lucide-react';
 import { getVendorInsight } from '../services/geminiService';
 import ImageUploader from './ImageUploader';
 import EditableText from './EditableText';
 import { vendorAPI, notesAPI } from '../services/apiService';
+import FileManager from './FileManager';
+import { subscribeToItems } from '../services/db';
+import { DocMetadata } from '../services/storage';
 
 interface VendorDetailProps {
     vendor: VendorResult;
@@ -24,7 +27,7 @@ const ImageModal: React.FC<{ src: string; alt: string; onClose: () => void }> = 
                 onClick={onClose}
                 className="absolute top-4 right-4 text-white hover:text-blue-400 transition z-10"
             >
-                <XIcon size={32} />
+                <X size={32} />
             </button>
             <img
                 src={src}
@@ -35,20 +38,6 @@ const ImageModal: React.FC<{ src: string; alt: string; onClose: () => void }> = 
             />
         </div>
     );
-};
-
-// Load images from localStorage
-const loadVendorImages = (vendorName: string, location: 'front' | 'back'): string[] => {
-    const storageKey = `vendor_images_${vendorName}_${location}`;
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-        try {
-            return JSON.parse(saved);
-        } catch (e) {
-            console.error('Failed to parse saved images');
-        }
-    }
-    return [];
 };
 
 // Vendor screenshot mapping (default screenshots)
@@ -81,8 +70,17 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
 
     // Image Management State
     const [showImageManager, setShowImageManager] = useState(false);
-    const [backImages, setBackImages] = useState<string[]>([]);
     const [refreshKey, setRefreshKey] = useState(0);
+
+    const [allDocuments, setAllDocuments] = useState<DocMetadata[]>([]);
+
+    // Subscribe to documents
+    useEffect(() => {
+        const unsubscribe = subscribeToItems('documents', (items: any[]) => {
+            setAllDocuments(items);
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Load vendor data from remote storage
     useEffect(() => {
@@ -117,11 +115,6 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
         loadNotes();
     }, [vendor.name]);
 
-    useEffect(() => {
-        // Load back images
-        setBackImages(loadVendorImages(vendor.name, 'back'));
-    }, [vendor.name, refreshKey]);
-
     // Save notes to remote storage
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -152,11 +145,6 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
 
     const handleImageClick = (src: string, alt: string) => {
         setEnlargedImage({ src, alt });
-    };
-
-    const handleUpdateImages = (images: string[]) => {
-        setBackImages(images);
-        setRefreshKey(prev => prev + 1);
     };
 
     // Save vendor data to remote storage
@@ -220,7 +208,17 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
 
     // Combine default and custom screenshots
     const defaultScreenshots = VENDOR_SCREENSHOTS[vendor.name] || [];
-    const allScreenshots = [...defaultScreenshots, ...backImages];
+
+    // Filter for back images
+    const customBackImages = allDocuments.filter(doc =>
+        doc.type === 'vendor_image' &&
+        doc.vendorId === vendor.name &&
+        doc.location === 'back'
+    );
+    // Sort by recent
+    customBackImages.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    const allScreenshots = [...defaultScreenshots, ...customBackImages.map(d => d.url)];
 
     return (
         <>
@@ -235,14 +233,14 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h2 className="text-xl font-bold text-white tracking-wide">{vendor.name}</h2>
+                            <h2 className="text-xl font-heading font-extrabold text-white tracking-wide">{vendor.name}</h2>
                             <div className="text-xs text-slate-400">Vendor Detail & Analysis</div>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="text-right">
-                            <div className="text-[10px] uppercase font-bold text-slate-500">Match Score</div>
-                            <div className="text-2xl font-bold text-blue-400">{vendor.finalScore}<span className="text-sm text-slate-600">/10</span></div>
+                            <div className="text-[10px] uppercase font-bold font-heading text-slate-500">Match Score</div>
+                            <div className="text-2xl font-bold font-heading text-accent-gold">{vendor.finalScore}<span className="text-sm font-sans text-slate-600">/10</span></div>
                         </div>
                     </div>
                 </div>
@@ -253,7 +251,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                         {/* Screenshot Gallery */}
                         <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-lg">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xs uppercase font-bold text-blue-400">Screenshots & Visuals</h3>
+                                <h3 className="text-xs uppercase font-bold font-heading text-accent-gold">Screenshots & Visuals</h3>
                                 <button
                                     onClick={() => setShowImageManager(!showImageManager)}
                                     className="flex items-center gap-2 text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded transition"
@@ -270,8 +268,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                     <ImageUploader
                                         vendorName={vendor.name}
                                         location="back"
-                                        currentImages={backImages}
-                                        onImagesUpdate={handleUpdateImages}
+                                        currentImages={customBackImages}
                                     />
                                 </div>
                             )}
@@ -311,11 +308,11 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
 
                                 {/* Best For Card */}
                                 <div className="bg-slate-800/50 border border-slate-700 p-6 rounded-lg">
-                                    <h3 className="text-xs uppercase font-bold text-blue-400 mb-2">Best For</h3>
+                                    <h3 className="text-xs uppercase font-bold font-heading text-accent-gold mb-2">Best For</h3>
                                     <EditableText
                                         value={vendorData.bestFor}
                                         onSave={handleBestForChange}
-                                        className="text-slate-200 italic"
+                                        className="text-base text-slate-200 italic"
                                         multiline
                                         placeholder="Click to add 'Best For' description"
                                     />
@@ -324,7 +321,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                 {/* Pros/Cons */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-lg">
-                                        <h4 className="text-xs uppercase font-bold text-emerald-500 mb-3 flex items-center gap-2 justify-between">
+                                        <h4 className="text-xs uppercase font-bold text-accent-green font-heading mb-3 flex items-center gap-2 justify-between">
                                             <span className="flex items-center gap-2">
                                                 <Check size={14} /> Strengths
                                             </span>
@@ -339,12 +336,12 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                         <div className="space-y-2">
                                             {vendorData.pros.map((p, i) => (
                                                 <div key={i} className="flex items-start gap-2 group">
-                                                    <span className="text-emerald-500 mt-1">•</span>
+                                                    <span className="text-accent-green mt-1">•</span>
                                                     <div className="flex-1">
                                                         <EditableText
                                                             value={p}
                                                             onSave={(newValue) => handleUpdatePro(i, newValue)}
-                                                            className="text-xs text-slate-300 leading-snug"
+                                                            className="text-base text-slate-300 leading-snug"
                                                             placeholder="Click to edit"
                                                         />
                                                     </div>
@@ -360,7 +357,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                         </div>
                                     </div>
                                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-lg">
-                                        <h4 className="text-xs uppercase font-bold text-rose-500 mb-3 flex items-center gap-2 justify-between">
+                                        <h4 className="text-xs uppercase font-bold text-rose-500 font-heading mb-3 flex items-center gap-2 justify-between">
                                             <span className="flex items-center gap-2">
                                                 <X size={14} /> Weaknesses
                                             </span>
@@ -380,9 +377,10 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                                         <EditableText
                                                             value={c}
                                                             onSave={(newValue) => handleUpdateCon(i, newValue)}
-                                                            className="text-xs text-slate-400 leading-snug"
+                                                            className="text-base text-slate-400 leading-snug"
                                                             placeholder="Click to edit"
                                                         />
+
                                                     </div>
                                                     <button
                                                         onClick={() => handleRemoveCon(i)}
@@ -398,15 +396,15 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                 </div>
 
                                 {/* AI Insight Box */}
-                                <div className="bg-gradient-to-br from-indigo-900/20 to-slate-800 border border-indigo-500/30 p-6 rounded-lg relative overflow-hidden">
+                                <div className="bg-gradient-to-br from-evergreen/20 to-slate-800 border border-evergreen/30 p-6 rounded-lg relative overflow-hidden">
                                     <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-indigo-300 font-bold text-sm flex items-center gap-2">
+                                        <h3 className="text-accent-gold font-bold text-sm flex items-center gap-2">
                                             <Sparkles size={16} /> Gemini Assessment
                                         </h3>
                                         {!insight && !loadingInsight && (
                                             <button
                                                 onClick={handleGetInsight}
-                                                className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded transition shadow-lg shadow-indigo-900/20"
+                                                className="text-xs bg-evergreen hover:bg-evergreen-light text-white px-3 py-1 rounded transition shadow-lg shadow-evergreen/20"
                                             >
                                                 Generate Insight
                                             </button>
@@ -414,7 +412,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                     </div>
 
                                     {loadingInsight && (
-                                        <div className="flex items-center gap-2 text-indigo-400 text-sm animate-pulse">
+                                        <div className="flex items-center gap-2 text-accent-green text-sm animate-pulse">
                                             <Loader2 size={16} className="animate-spin" /> Analyzing against philosophy...
                                         </div>
                                     )}
@@ -433,8 +431,8 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                 {/* Notes Section - Takes available height */}
                                 <div className="bg-slate-800 border border-slate-700 rounded-lg p-1 flex-1 flex flex-col min-h-[400px]">
                                     <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-800 rounded-t-lg">
-                                        <h3 className="text-xs uppercase font-bold text-slate-400 tracking-wider">My Notes & Questions</h3>
-                                        <span className={`text-[10px] uppercase font-bold transition-colors duration-300 ${saveStatus === 'saved' ? 'text-emerald-500' : 'text-slate-600'}`}>
+                                        <h3 className="text-xs uppercase font-bold font-heading text-accent-gold tracking-wider">My Notes & Questions</h3>
+                                        <span className={`text-[10px] uppercase font-bold transition-colors duration-300 ${saveStatus === 'saved' ? 'text-accent-green' : 'text-slate-600'}`}>
                                             {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Auto-save'}
                                         </span>
                                     </div>
@@ -446,9 +444,16 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                     />
                                 </div>
 
+                                {/* Documents Section */}
+                                <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+                                    <h3 className="text-xs uppercase font-bold font-heading text-accent-gold mb-3">Support Documents</h3>
+                                    <FileManager type="vendor" vendorId={vendor.name} />
+                                </div>
+
+
                                 {/* Detailed Category Scores */}
                                 <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                                    <h3 className="text-xs uppercase font-bold text-slate-500 mb-3">Category Breakdown</h3>
+                                    <h3 className="text-xs uppercase font-bold font-heading text-accent-gold mb-3">Category Breakdown</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-6">
                                         {CATEGORIES.map((cat, i) => {
                                             const score = vendor.scores[i];
@@ -463,7 +468,7 @@ const VendorDetail: React.FC<VendorDetailProps> = ({ vendor, weights, onBack }) 
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                                                             <div
-                                                                className={`h-full ${score >= 8 ? 'bg-emerald-500' : score >= 5 ? 'bg-blue-500' : 'bg-rose-500'}`}
+                                                                className={`h-full ${score >= 8 ? 'bg-evergreen' : score >= 5 ? 'bg-accent-gold' : 'bg-rose-500'}`}
                                                                 style={{ width: `${score * 10}%` }}
                                                             />
                                                         </div>
