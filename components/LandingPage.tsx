@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
             ctx.save();
             ctx.globalAlpha = this.alpha;
             ctx.fillStyle = this.color;
-            ctx.font = \px "Source Sans 3", sans-serif;
+            ctx.font = this.size + "px \"Source Sans 3\", sans-serif";
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle);
             ctx.fillText('$', -this.size/3, this.size/3);
