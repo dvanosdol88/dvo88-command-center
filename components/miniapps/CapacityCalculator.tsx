@@ -17,7 +17,7 @@ import {
 // --- Components ---
 
 const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={g-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 transition-colors duration-300 }>
+  <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 transition-colors duration-300 ${className}`}>
     {children}
   </div>
 );
@@ -69,9 +69,13 @@ const StatBox = ({ label, value, subtext, highlight = false, valueSize = "text-2
   highlight?: boolean;
   valueSize?: string;
 }) => (
-  <div className={px-4 py-3 rounded-lg border transition-colors duration-300 }>
+  <div className={`px-4 py-3 rounded-lg border transition-colors duration-300 ${     
+      highlight
+      ? 'bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-500/30'     
+      : 'bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'       
+  }`}>
     <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{label}</div>
-    <div className={${valueSize} font-bold leading-tight }>
+    <div className={`${valueSize} font-bold leading-tight ${highlight ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-900 dark:text-slate-200'}`}>
       {value}
     </div>
     {subtext && <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{subtext}</div>}
@@ -206,7 +210,7 @@ const CapacityCalculator: React.FC = () => {
     const ampm = h >= 12 ? 'PM' : 'AM';
     const hour12 = h > 12 ? h - 12 : h;
     const minStr = m === 0 ? '00' : m.toString();
-    return ${hour12}: ;
+    return `${hour12}:${minStr} ${ampm}`;
   };
 
   // --- Visual Component: Representative Week ---
@@ -278,7 +282,7 @@ const CapacityCalculator: React.FC = () => {
 
         <div className="flex gap-2">
           {/* Time Labels Sidebar */}
-          <div className="flex flex-col justify-between pt-6 pb-0 w-12 flex-shrink-0 relative" style={{ height: ${totalContainerHeight + 25}px }}>
+          <div className="flex flex-col justify-between pt-6 pb-0 w-12 flex-shrink-0 relative" style={{ height: `${totalContainerHeight + 25}px` }}>
              <div className="text-[10px] text-right pr-2 text-slate-400 dark:text-slate-500 font-bold -mt-2">
                 {formatTime(inputs.startHour)}
               </div>
@@ -291,7 +295,7 @@ const CapacityCalculator: React.FC = () => {
           <div className="flex-1">
             <div className="grid grid-cols-6 gap-1 mb-1 pl-1">
                 {daysToShow.map((day, idx) => (
-                  <div key={day} className={	ext-[10px] text-center font-medium }>
+                  <div key={day} className={`text-[10px] text-center font-medium ${idx >= inputs.workDaysPerWeek ? 'text-slate-400 dark:text-slate-600' : 'text-slate-600 dark:text-slate-400'}`}>
                     {day}
                   </div>
                 ))}
@@ -304,8 +308,8 @@ const CapacityCalculator: React.FC = () => {
                 return (
                   <div
                     key={day}
-                    className={elative rounded-sm border }
-                    style={{ height: ${totalContainerHeight}px }}
+                    className={`relative rounded-sm border ${isActiveDay ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800' : 'bg-slate-50 dark:bg-slate-950/30 border-transparent'}`}
+                    style={{ height: `${totalContainerHeight}px` }}
                   >
                     {isActiveDay && (
                       <div className="flex flex-col gap-[2px] p-[2px]">
@@ -313,8 +317,8 @@ const CapacityCalculator: React.FC = () => {
                            <div
                              key={i}
                              className="w-full bg-cyan-500 dark:bg-cyan-600 border border-cyan-400 dark:border-cyan-500 rounded-[1px] shadow-sm flex-shrink-0 opacity-80" 
-                             style={{ height: ${Math.max(2, blockHeight - 2)}px }} 
-                             title={Meeting :  mins}
+                             style={{ height: `${Math.max(2, blockHeight - 2)}px` }} 
+                             title={`Meeting ${i+1}: ${inputs.minutesPerMeeting} mins`}
                            />
                         ))}
                       </div>
@@ -479,15 +483,15 @@ const CapacityCalculator: React.FC = () => {
                           </div>
                        </div>
                      </div>
-                     <div className={	ext-2xl font-bold px-3 py-1 rounded-lg border }>
+                     <div className={`text-2xl font-bold px-3 py-1 rounded-lg border ${getCapacityColor(stats.capacityPercentage)}`}>
                        {stats.capacityPercentage.toFixed(1)}%
                      </div>
                    </div>
 
                    <div className="w-full bg-slate-200 dark:bg-slate-900/50 rounded-full h-4 overflow-hidden mb-2 border border-slate-300 dark:border-slate-800">
                      <div
-                        className={h-full transition-all duration-500 }
-                        style={{ width: ${Math.min(stats.capacityPercentage, 100)}% }}
+                        className={`h-full transition-all duration-500 ${getBarColor(stats.capacityPercentage)}`}
+                        style={{ width: `${Math.min(stats.capacityPercentage, 100)}%` }}
                      ></div>
                    </div>
 
@@ -517,7 +521,11 @@ const CapacityCalculator: React.FC = () => {
                        </div>
                        <button
                         onClick={handleManualSave}
-                        className={lex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 }
+                        className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${
+                          saveSuccess 
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        }`}
                       >
                         {saveSuccess ? (
                           <>
