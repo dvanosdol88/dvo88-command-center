@@ -10,6 +10,10 @@
   ],
   "routes": [
     {
+      "src": "/ai-tools",
+      "dest": "/ai-tools.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
