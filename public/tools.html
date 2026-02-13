@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>Tools</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #151923;
+      --panel-2: #1c2230;
+      --text: #e8edf7;
+      --muted: #98a4b8;
+      --border: #2a3244;
+      --cursor: #3b82f6;
+      --windows: #16a34a;
+      --chrome: #ea580c;
+      --wispr: #7c3aed;
+      --raycast: #06b6d4;
+      --onenote: #a855f7;
+      --chip: #222a3a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Segoe UI, Inter, Arial, sans-serif;
+      background: radial-gradient(circle at top, #172034, var(--bg) 45%);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    }
+
+    .header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #111624;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      padding-top: 2px;
+    }
+
+    .nav-tab {
+      border: 1px solid var(--border);
+      background: #0f1420;
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .nav-tab.active {
+      border-color: #6aa8ff;
+      box-shadow: 0 0 0 3px rgba(106,168,255,0.18);
+    }
+
+    .tools {
+      padding: 14px 18px 18px;
+    }
+
+    .tools-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0f1626;
+      color: #dbe5f7;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .tools-bar strong {
+      color: #9ec5ff;
+    }
+
+    .tools-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tools-link {
+      display: inline-block;
+      border: 1px solid var(--border);
+      background: #0f1420;
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .tools-frame {
+      width: 100%;
+      height: min(78vh, 980px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0b1020;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tips {
+      margin: 12px 18px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0f1626;
+      font-size: 13px;
+      color: #dbe5f7;
+      line-height: 1.45;
+    }
+
+    .tips strong {
+      color: #9ec5ff;
+      margin-right: 8px;
+    }
+
+    .hint {
+      margin: 10px 18px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #121a2d;
+      color: #c6d2e8;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    @media (min-width: 860px) {
+      .controls {
+        grid-template-columns: 2fr 1fr;
+      }
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0f1420;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #5aa3ff;
+      box-shadow: 0 0 0 3px rgba(90,163,255,0.18);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 18px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--chip);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      border-color: #6aa8ff;
+      box-shadow: 0 0 0 3px rgba(106,168,255,0.18);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      background: #101523;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .app-badge {
+      display: inline-block;
+      min-width: 92px;
+      text-align: center;
+      color: #fff;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .app-cursor { background: var(--cursor); }
+    .app-windows { background: var(--windows); }
+    .app-chrome { background: var(--chrome); }
+    .app-wispr { background: var(--wispr); }
+    .app-raycast { background: var(--raycast); }
+    .app-onenote { background: var(--onenote); }
+
+    kbd {
+      display: inline-block;
+      border: 1px solid #3c4660;
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 2px 6px;
+      margin: 1px 3px 1px 0;
+      font-size: 12px;
+      background: #111827;
+      color: #d8e0ef;
+      white-space: nowrap;
+    }
+
+    .meta {
+      padding: 10px 18px 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .no-results {
+      padding: 18px;
+      color: #fca5a5;
+    }
+
+    mark {
+      background: rgba(250, 204, 21, 0.25);
+      color: #fde68a;
+      border-radius: 3px;
+      padding: 0 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <header class="header">
+        <div class="header-row">
+          <div>
+            <h1 class="title">Tools</h1>
+            <p class="subtitle">One page for AI tools and everyday shortcuts. Switch tabs to jump contexts fast.</p>
+          </div>
+          <div class="header-actions" aria-label="Page navigation">
+            <button type="button" class="nav-tab" data-view="tools">AI Tools</button>
+            <button type="button" class="nav-tab" data-view="shortcuts">Shortcuts</button>
+          </div>
+        </div>
+      </header>
+
+      <div id="shortcutsView">
+        <div class="tips">
+          <strong>Quick Tips:</strong>
+          If a shortcut fails, check app focus first (editor vs terminal vs browser). Start with App = All, then narrow by app/category. If a combo still does not trigger, another app or extension may be overriding it.
+        </div>
+
+        <div id="hint" class="hint"></div>
+
+        <div class="controls">
+          <input id="search" type="text" placeholder="Try: devtools, ctrl shft t, windows snap, wispr paste..." />
+          <select id="categoryFilter">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+
+        <div class="chips" id="appChips"></div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>Category</th>
+              <th>Command</th>
+              <th>Key Binding</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+
+        <div id="empty" class="no-results" style="display:none;">No matches. Try fewer words or different key fragments.</div>
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div id="toolsView" class="tools" hidden>
+        <div class="tools-bar">
+          <div>
+            <strong>AI Tools:</strong> embedded inventory from <code>ai-tools.html</code>.
+          </div>
+          <div class="tools-actions">
+            <a class="tools-link" href="./ai-tools.html" target="_blank" rel="noopener">Open full page</a>
+            <button type="button" class="nav-tab" id="reloadTools" title="Reload the embedded page">Reload</button>
+          </div>
+        </div>
+        <iframe id="toolsFrame" class="tools-frame" src="./ai-tools.html" title="AI Tools Inventory"></iframe>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const shortcuts = [
+      { app: 'Cursor', category: 'Core', command: 'Command Palette', keys: 'Ctrl+Shift+P' },
+      { app: 'Cursor', category: 'Core', command: 'Keyboard Shortcuts UI', keys: 'Ctrl+K, Ctrl+S' },
+      { app: 'Cursor', category: 'Core', command: 'Open Settings', keys: 'Ctrl+,' },
+      { app: 'Cursor', category: 'Core', command: 'Quick Open file', keys: 'Ctrl+P' },
+      { app: 'Cursor', category: 'Core', command: 'Global Search', keys: 'Ctrl+Shift+F' },
+      { app: 'Cursor', category: 'Core', command: 'Explorer', keys: 'Ctrl+Shift+E' },
+      { app: 'Cursor', category: 'Core', command: 'Source Control', keys: 'Ctrl+Shift+G' },
+      { app: 'Cursor', category: 'Core', command: 'Terminal toggle', keys: 'Ctrl+`' },
+      { app: 'Cursor', category: 'Editing', command: 'Copy line down/up', keys: 'Shift+Alt+Down / Shift+Alt+Up' },
+      { app: 'Cursor', category: 'Editing', command: 'Move line down/up', keys: 'Alt+Down / Alt+Up' },
+      { app: 'Cursor', category: 'Editing', command: 'Delete line', keys: 'Ctrl+Shift+K' },
+      { app: 'Cursor', category: 'Editing', command: 'Format document', keys: 'Shift+Alt+F' },
+      { app: 'Cursor', category: 'Editing', command: 'Rename symbol', keys: 'F2' },
+      { app: 'Cursor', category: 'Editing', command: 'Quick Fix / code actions', keys: 'Ctrl+.' },
+      { app: 'Cursor', category: 'Editing', command: 'Go to definition', keys: 'F12' },
+      { app: 'Cursor', category: 'Editing', command: 'Peek definition', keys: 'Alt+F12' },
+      { app: 'Cursor', category: 'Selection', command: 'Add cursor above/below', keys: 'Ctrl+Alt+Up / Ctrl+Alt+Down' },
+      { app: 'Cursor', category: 'Selection', command: 'Add next match', keys: 'Ctrl+D' },
+      { app: 'Cursor', category: 'Selection', command: 'Select all matches', keys: 'Ctrl+Shift+L' },
+      { app: 'Cursor', category: 'Selection', command: 'Column selection', keys: 'Shift+Alt + mouse drag' },
+      { app: 'Cursor', category: 'Tabs', command: 'New file', keys: 'Ctrl+N' },
+      { app: 'Cursor', category: 'Tabs', command: 'Close editor', keys: 'Ctrl+W' },
+      { app: 'Cursor', category: 'Tabs', command: 'Reopen closed editor', keys: 'Ctrl+Shift+T' },
+      { app: 'Cursor', category: 'Tabs', command: 'Split editor', keys: 'Ctrl+\\' },
+      { app: 'Cursor', category: 'Tabs', command: 'Navigate tabs', keys: 'Ctrl+Tab' },
+      { app: 'Cursor', category: 'Terminal', command: 'New terminal', keys: 'Ctrl+Shift+`' },
+      { app: 'Cursor', category: 'Terminal', command: 'Focus terminal', keys: 'Ctrl+`' },
+
+      { app: 'Windows', category: 'Essential', command: 'Start menu', keys: 'Win' },
+      { app: 'Windows', category: 'Essential', command: 'Search', keys: 'Win+S' },
+      { app: 'Windows', category: 'Essential', command: 'Run dialog', keys: 'Win+R' },
+      { app: 'Windows', category: 'Essential', command: 'Settings', keys: 'Win+I' },
+      { app: 'Windows', category: 'Essential', command: 'Lock PC', keys: 'Win+L' },
+      { app: 'Windows', category: 'Essential', command: 'Quick settings', keys: 'Win+A' },
+      { app: 'Windows', category: 'Essential', command: 'Notifications/calendar', keys: 'Win+N' },
+      { app: 'Windows', category: 'Window management', command: 'Snap left/right', keys: 'Win+Left / Win+Right' },
+      { app: 'Windows', category: 'Window management', command: 'Maximize', keys: 'Win+Up' },
+      { app: 'Windows', category: 'Window management', command: 'Minimize', keys: 'Win+Down' },
+      { app: 'Windows', category: 'Window management', command: 'Task view', keys: 'Win+Tab' },
+      { app: 'Windows', category: 'Window management', command: 'Switch apps', keys: 'Alt+Tab' },
+      { app: 'Windows', category: 'Window management', command: 'Minimize all', keys: 'Win+M' },
+      { app: 'Windows', category: 'Window management', command: 'Show desktop', keys: 'Win+D' },
+      { app: 'Windows', category: 'Virtual desktops', command: 'New desktop', keys: 'Win+Ctrl+D' },
+      { app: 'Windows', category: 'Virtual desktops', command: 'Next/previous desktop', keys: 'Win+Ctrl+Right / Win+Ctrl+Left' },
+      { app: 'Windows', category: 'Virtual desktops', command: 'Close current desktop', keys: 'Win+Ctrl+F4' },
+      { app: 'Windows', category: 'File and clipboard', command: 'File Explorer', keys: 'Win+E' },
+      { app: 'Windows', category: 'File and clipboard', command: 'Copy / paste / cut', keys: 'Ctrl+C / Ctrl+V / Ctrl+X' },
+      { app: 'Windows', category: 'File and clipboard', command: 'Undo / redo', keys: 'Ctrl+Z / Ctrl+Y' },
+      { app: 'Windows', category: 'File and clipboard', command: 'Clipboard history', keys: 'Win+V' },
+      { app: 'Windows', category: 'File and clipboard', command: 'Emoji/symbol panel', keys: 'Win+.' },
+      { app: 'Windows', category: 'File and clipboard', command: 'Screenshot area', keys: 'Win+Shift+S' },
+      { app: 'Windows', category: 'File and clipboard', command: 'Save full screenshot', keys: 'Win+PrtScn' },
+      { app: 'Windows', category: 'Utilities', command: 'Narrator toggle', keys: 'Ctrl+Win+Enter' },
+      { app: 'Windows', category: 'Utilities', command: 'Magnifier open/close', keys: 'Win++ / Win+Esc' },
+      { app: 'Windows', category: 'Utilities', command: 'Xbox Game Bar', keys: 'Win+G' },
+      { app: 'Windows', category: 'Utilities', command: 'Project display mode', keys: 'Win+P' },
+
+      { app: 'Chrome', category: 'Tabs and windows', command: 'New tab', keys: 'Ctrl+T' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'New window', keys: 'Ctrl+N' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'New incognito window', keys: 'Ctrl+Shift+N' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'Close tab', keys: 'Ctrl+W' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'Reopen closed tab', keys: 'Ctrl+Shift+T' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'Next/previous tab', keys: 'Ctrl+Tab / Ctrl+Shift+Tab' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'Jump to tab 1-8', keys: 'Ctrl+1 ... Ctrl+8' },
+      { app: 'Chrome', category: 'Tabs and windows', command: 'Last tab', keys: 'Ctrl+9' },
+      { app: 'Chrome', category: 'Navigation', command: 'Address bar focus', keys: 'Ctrl+L / Alt+D' },
+      { app: 'Chrome', category: 'Navigation', command: 'Back / forward', keys: 'Alt+Left / Alt+Right' },
+      { app: 'Chrome', category: 'Navigation', command: 'Reload', keys: 'Ctrl+R' },
+      { app: 'Chrome', category: 'Navigation', command: 'Hard reload', keys: 'Ctrl+Shift+R' },
+      { app: 'Chrome', category: 'Navigation', command: 'Stop loading', keys: 'Esc' },
+      { app: 'Chrome', category: 'Navigation', command: 'Home', keys: 'Alt+Home' },
+      { app: 'Chrome', category: 'Page actions', command: 'Find in page', keys: 'Ctrl+F' },
+      { app: 'Chrome', category: 'Page actions', command: 'Save page', keys: 'Ctrl+S' },
+      { app: 'Chrome', category: 'Page actions', command: 'Print', keys: 'Ctrl+P' },
+      { app: 'Chrome', category: 'Page actions', command: 'Zoom in/out/reset', keys: 'Ctrl++ / Ctrl+- / Ctrl+0' },
+      { app: 'Chrome', category: 'Page actions', command: 'Full screen', keys: 'F11' },
+      { app: 'Chrome', category: 'Tools', command: 'Downloads', keys: 'Ctrl+J' },
+      { app: 'Chrome', category: 'Tools', command: 'History', keys: 'Ctrl+H' },
+      { app: 'Chrome', category: 'Tools', command: 'Bookmarks manager', keys: 'Ctrl+Shift+O' },
+      { app: 'Chrome', category: 'Tools', command: 'Developer tools', keys: 'Ctrl+Shift+I' },
+      { app: 'Chrome', category: 'Tools', command: 'View source', keys: 'Ctrl+U' },
+      { app: 'Chrome', category: 'Tools', command: 'Task Manager (Chrome)', keys: 'Shift+Esc' },
+      { app: 'Chrome', category: 'Extensions', command: 'Manage extension keybindings', keys: 'chrome://extensions/shortcuts' },
+
+      { app: 'Wispr Flow', category: 'Voice', command: 'Push-to-talk', keys: 'Ctrl+Shift+Space' },
+      { app: 'Wispr Flow', category: 'Voice', command: 'Hands-free mode', keys: 'Ctrl+Shift+F' },
+      { app: 'Wispr Flow', category: 'Voice', command: 'Paste last transcript', keys: 'Alt+Shift+Z' },
+
+      { app: 'Raycast', category: 'General (Windows)', command: 'Open Raycast launcher (suggested default)', keys: 'Alt+Space' },
+      { app: 'Raycast', category: 'General (Windows)', command: 'Open Settings', keys: 'Ctrl+,' },
+      { app: 'Raycast', category: 'Launcher', command: 'Launch selected app/command', keys: 'Enter' },
+      { app: 'Raycast', category: 'Launcher', command: 'Jump to Apps section', keys: 'Ctrl+Down' },
+      { app: 'Raycast', category: 'Launcher', command: 'Open actions for selected item', keys: 'Ctrl+K' },
+      { app: 'Raycast', category: 'Shortcuts setup', command: 'Record hotkey type: modifiers + key', keys: 'Win+Shift+F (example)' },
+      { app: 'Raycast', category: 'Shortcuts setup', command: 'Record hotkey type: double-tap modifier', keys: 'Win, Win' },
+      { app: 'Raycast', category: 'Shortcuts setup', command: 'Record hotkey type: single-tap modifier', keys: 'Win (example)' },
+
+      { app: 'OneNote', category: 'Pages and sections', command: 'New page', keys: 'Ctrl+N' },
+      { app: 'OneNote', category: 'Pages and sections', command: 'New section', keys: 'Ctrl+T' },
+      { app: 'OneNote', category: 'Pages and sections', command: 'Next page', keys: 'Ctrl+PageDown' },
+      { app: 'OneNote', category: 'Pages and sections', command: 'Previous page', keys: 'Ctrl+PageUp' },
+      { app: 'OneNote', category: 'Pages and sections', command: 'Go to page title', keys: 'Ctrl+Shift+T' },
+      { app: 'OneNote', category: 'Editing', command: 'Copy / paste / cut', keys: 'Ctrl+C / Ctrl+V / Ctrl+X' },
+      { app: 'OneNote', category: 'Editing', command: 'Undo / redo', keys: 'Ctrl+Z / Ctrl+Y' },
+      { app: 'OneNote', category: 'Editing', command: 'Select all', keys: 'Ctrl+A' },
+      { app: 'OneNote', category: 'Navigation', command: 'Open actions/context menu for selected item', keys: 'Shift+F10' },
+      { app: 'OneNote', category: 'Search and organization', command: 'Find on current page', keys: 'Ctrl+F' },
+      { app: 'OneNote', category: 'Search and organization', command: 'Search all notebooks', keys: 'Ctrl+E' },
+      { app: 'OneNote', category: 'Tagging', command: 'Apply/clear To-Do tag', keys: 'Ctrl+1' }
+    ];
+
+    const appClass = {
+      'Cursor': 'app-cursor',
+      'Windows': 'app-windows',
+      'Chrome': 'app-chrome',
+      'Wispr Flow': 'app-wispr',
+      'Raycast': 'app-raycast',
+      'OneNote': 'app-onenote'
+    };
+
+    const rowsEl = document.getElementById('rows');
+    const searchEl = document.getElementById('search');
+    const appChipsEl = document.getElementById('appChips');
+    const categoryFilterEl = document.getElementById('categoryFilter');
+    const metaEl = document.getElementById('meta');
+    const emptyEl = document.getElementById('empty');
+    const hintEl = document.getElementById('hint');
+    const shortcutsViewEl = document.getElementById('shortcutsView');
+    const toolsViewEl = document.getElementById('toolsView');
+    const toolsFrameEl = document.getElementById('toolsFrame');
+    const reloadToolsEl = document.getElementById('reloadTools');
+    const navTabs = Array.from(document.querySelectorAll('.nav-tab[data-view]'));
+
+    let activeApp = 'all';
+    let activeView = 'shortcuts';
+
+    function setView(view, { pushState = true } = {}) {
+      const next = view === 'tools' ? 'tools' : 'shortcuts';
+      activeView = next;
+
+      shortcutsViewEl.hidden = next !== 'shortcuts';
+      toolsViewEl.hidden = next !== 'tools';
+
+      navTabs.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.view === next);
+      });
+
+      if (pushState) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', next);
+        history.replaceState({}, '', url.toString());
+      }
+
+      if (next === 'shortcuts') {
+        // Keep keyboard flow fast when switching back.
+        setTimeout(() => searchEl.focus(), 0);
+      }
+    }
+
+    function normalize(value) {
+      return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    }
+
+    function fuzzySubsequence(needle, haystack) {
+      if (!needle) return true;
+      let i = 0;
+      for (const ch of haystack) {
+        if (ch === needle[i]) i++;
+        if (i === needle.length) return true;
+      }
+      return false;
+    }
+
+    function matchesFuzzy(query, item) {
+      if (!query.trim()) return true;
+      const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      const fields = [item.app, item.category, item.command, item.keys];
+
+      return tokens.every((token) => {
+        const tNorm = normalize(token);
+        return fields.some((field) => {
+          const raw = String(field || '').toLowerCase();
+          const fNorm = normalize(field);
+          return raw.includes(token.toLowerCase()) || fuzzySubsequence(tNorm, fNorm);
+        });
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function buildAlphaNumMap(text) {
+      const chars = [];
+      const positions = [];
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (/[a-z0-9]/i.test(ch)) {
+          chars.push(ch.toLowerCase());
+          positions.push(i);
+        }
+      }
+      return { normalized: chars.join(''), positions };
+    }
+
+    function collectMatchPositions(text, query) {
+      const tokens = (query || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
+      if (!tokens.length) return new Set();
+
+      const { normalized, positions } = buildAlphaNumMap(text);
+      const marked = new Set();
+
+      for (const token of tokens) {
+        const tNorm = normalize(token);
+        if (!tNorm) continue;
+
+        const directIndex = normalized.indexOf(tNorm);
+        if (directIndex !== -1) {
+          for (let i = 0; i < tNorm.length; i++) {
+            marked.add(positions[directIndex + i]);
+          }
+          continue;
+        }
+
+        let j = 0;
+        const seq = [];
+        for (let i = 0; i < normalized.length && j < tNorm.length; i++) {
+          if (normalized[i] === tNorm[j]) {
+            seq.push(positions[i]);
+            j++;
+          }
+        }
+
+        if (j === tNorm.length) {
+          for (const pos of seq) marked.add(pos);
+        }
+      }
+
+      return marked;
+    }
+
+    function highlightText(text, query) {
+      const value = String(text || '');
+      const marked = collectMatchPositions(value, query);
+      if (!marked.size) return escapeHtml(value);
+
+      let out = '';
+      let open = false;
+      for (let i = 0; i < value.length; i++) {
+        const shouldMark = marked.has(i);
+        if (shouldMark && !open) {
+          out += '<mark>';
+          open = true;
+        }
+        if (!shouldMark && open) {
+          out += '</mark>';
+          open = false;
+        }
+        out += escapeHtml(value[i]);
+      }
+      if (open) out += '</mark>';
+      return out;
+    }
+
+    function renderKeys(keys, query) {
+      return String(keys || '')
+        .split('/')
+        .map(part => `<kbd>${highlightText(part.trim(), query)}</kbd>`)
+        .join(' ');
+    }
+
+    function getAppTooltip(app) {
+      if (app === 'Raycast') {
+        return 'Raycast entries are documented defaults/common actions. Custom bindings should be confirmed in Raycast Settings > Shortcuts.';
+      }
+      return '';
+    }
+
+    function populateFilters() {
+      const apps = ['all', ...new Set(shortcuts.map(s => s.app))];
+      appChipsEl.innerHTML = apps.map((app) => {
+        const cls = app === 'all' ? '' : (appClass[app] || '');
+        const label = app === 'all' ? 'All apps' : app;
+        const active = app === activeApp ? 'active' : '';
+        const tip = escapeHtml(getAppTooltip(app));
+        const titleAttr = tip ? ` title="${tip}"` : '';
+        return `<button class="chip ${active}" data-app="${app}"${titleAttr}><span class="app-badge ${cls}"${titleAttr}>${label}</span></button>`;
+      }).join('');
+
+      const categories = ['all', ...new Set(shortcuts.map(s => s.category))];
+      categoryFilterEl.innerHTML = categories.map((c) => {
+        const label = c === 'all' ? 'All categories' : c;
+        return `<option value="${c}">${label}</option>`;
+      }).join('');
+
+      appChipsEl.querySelectorAll('button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeApp = btn.dataset.app;
+          render();
+        });
+      });
+    }
+
+    function getContextHint(query, filtered, category) {
+      const q = (query || '').trim();
+      const qNorm = normalize(q);
+
+      if (!q) {
+        return 'Type a command or key combo (for example: devtools, ctrl shift t, win left, wispr paste).';
+      }
+
+      if (filtered.length === 0) {
+        if (activeApp !== 'all' || category !== 'all') {
+          return 'No matches in the current filter. Try App = All and Category = All, then use shorter search terms.';
+        }
+        return 'No matches found. Try fewer words or part of the key combo (for example: ctrl shift, win, alt).';
+      }
+
+      if (filtered.length > 15) {
+        return 'Many matches found. Narrow results by selecting an app or category.';
+      }
+
+      const ctrlShiftFEntries = filtered.filter((item) => normalize(item.keys).includes('ctrlshiftf'));
+      if (qNorm.includes('ctrlshiftf') && ctrlShiftFEntries.length > 1) {
+        const apps = [...new Set(ctrlShiftFEntries.map((item) => item.app))].join(' and ');
+        return `This combo appears in multiple apps (${apps}). Use the app chips to target one.`;
+      }
+
+      return 'Showing search results. Refine with more terms or switch app/category to explore related bindings.';
+    }
+
+    function render() {
+      const q = searchEl.value || '';
+      const category = categoryFilterEl.value;
+
+      const filtered = shortcuts.filter((item) => {
+        const appOk = activeApp === 'all' || item.app === activeApp;
+        const catOk = category === 'all' || item.category === category;
+        const fuzzyOk = matchesFuzzy(q, item);
+        return appOk && catOk && fuzzyOk;
+      });
+
+      rowsEl.innerHTML = filtered.map((item) => {
+        const badgeClass = appClass[item.app] || '';
+        const tip = escapeHtml(getAppTooltip(item.app));
+        const titleAttr = tip ? ` title="${tip}"` : '';
+        return `<tr>
+          <td><span class="app-badge ${badgeClass}"${titleAttr}>${highlightText(item.app, q)}</span></td>
+          <td>${highlightText(item.category, q)}</td>
+          <td>${highlightText(item.command, q)}</td>
+          <td>${renderKeys(item.keys, q)}</td>
+        </tr>`;
+      }).join('');
+
+      emptyEl.style.display = filtered.length ? 'none' : 'block';
+      metaEl.textContent = `Showing ${filtered.length} of ${shortcuts.length} shortcuts`;
+      hintEl.textContent = getContextHint(q, filtered, category);
+
+      appChipsEl.querySelectorAll('button').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.app === activeApp);
+      });
+    }
+
+    searchEl.addEventListener('input', render);
+    categoryFilterEl.addEventListener('change', render);
+
+    populateFilters();
+    render();
+
+    navTabs.forEach((btn) => {
+      btn.addEventListener('click', () => setView(btn.dataset.view));
+    });
+
+    if (reloadToolsEl && toolsFrameEl) {
+      reloadToolsEl.addEventListener('click', () => {
+        // Force a reload even if the browser caches file:// URLs.
+        const src = toolsFrameEl.getAttribute('src') || './ai-tools.html';
+        toolsFrameEl.setAttribute('src', src.split('#')[0] + '#r=' + Date.now());
+      });
+    }
+
+    const initial = new URLSearchParams(window.location.search).get('view');
+    if (initial) setView(initial, { pushState: true });
+    else setView('tools', { pushState: false });
+  </script>
+</body>
+</html>
