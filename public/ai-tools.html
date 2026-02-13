@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
     <title>AI Agent Tools & Instructions Inventory</title>
     <style>
         * {
@@ -17,6 +18,34 @@
             color: #e2e8f0;
             padding: 20px;
             min-height: 100vh;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            margin: 0 auto 14px;
+            max-width: 1200px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .top-nav a {
+            color: #cbd5e0;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .top-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .top-nav .hint {
+            color: #a0aec0;
+            font-size: 0.85em;
         }
 
         h1 {
@@ -581,6 +610,11 @@
     </style>
 </head>
 <body>
+    <div class="top-nav">
+        <a href="/tools" target="_top">&larr; Tools</a>
+        <div class="hint">Shortcut: <code>/tools</code> (Shortcuts + AI Tools)</div>
+    </div>
+
     <h1>AI Agent Tools & Instructions Inventory</h1>
     <p class="subtitle">Unified view of MCP servers, tools, and instruction files across all agents</p>
 

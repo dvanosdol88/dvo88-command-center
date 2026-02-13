@@ -11,7 +11,14 @@
   "routes": [
     {
       "src": "/ai-tools",
-      "dest": "/ai-tools.html"
+      "status": 308,
+      "headers": {
+        "Location": "/tools"
+      }
+    },
+    {
+      "src": "/tools",
+      "dest": "/tools.html"
     },
     {
       "src": "/(.*)",
