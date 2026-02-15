@@ -168,12 +168,20 @@ const LandingPage: React.FC = () => {
       {!isAuthenticated && (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center transition-opacity duration-500">
             <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-slate-200 dark:border-slate-700">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Enter Passcode</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Enter the 6-digit code to access the dashboard.</p>
-                
-                <div className="flex justify-center gap-2 mb-4">
-                    {passcode.map((digit, idx) => (
-                        <input
+                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Enter Passcode</h2>
+                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Enter the 6-digit code to access the dashboard.</p>
+                 <div className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+                   <Link
+                     to="/leo-ai"
+                     className="font-semibold underline decoration-slate-300 hover:decoration-emerald-600 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors"
+                   >
+                     Go to Leo AI (separate login)
+                   </Link>
+                 </div>
+                 
+                 <div className="flex justify-center gap-2 mb-4">
+                     {passcode.map((digit, idx) => (
+                         <input
                             key={idx}
                             ref={el => inputsRef.current[idx] = el}
                             type="text"
