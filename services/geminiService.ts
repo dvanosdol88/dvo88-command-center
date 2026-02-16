@@ -1,7 +1,31 @@
-import { GoogleGenAI } from "@google/genai";
 import { VendorResult, WeightState } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+type ApiChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
+
+async function requestAi(messages: ApiChatMessage[]): Promise<string> {
+  const resp = await fetch("/api/ai/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+
+  let data: any = null;
+  try {
+    data = await resp.json();
+  } catch {
+    data = null;
+  }
+
+  if (!resp.ok || !data?.ok) {
+    const details = data?.cause ? `${data.error} (${data.cause})` : data?.error || "Unknown AI error";
+    throw new Error(details);
+  }
+
+  return data?.response?.message?.content || "No response received.";
+}
 
 const formatContext = (weights: WeightState, results: VendorResult[]) => {
   const weightsText = Object.entries(weights)
@@ -42,16 +66,10 @@ export const analyzeSelection = async (
       3. Use a professional, strategic tone.
     `;
 
-    // Using gemini-3-pro-preview for complex reasoning and strategic analysis
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: prompt,
-    });
-
-    return response.text || "Analysis could not be generated at this time.";
+    return await requestAi([{ role: "user", content: prompt }]);
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "Unable to connect to the Consultant AI. Please verify your API Key.";
+    console.error("AI API Error:", error);
+    return "Unable to connect to the AI consultant right now.";
   }
 };
 
@@ -61,18 +79,18 @@ export const compareVendors = async (
   weights: WeightState
 ): Promise<string> => {
   try {
-    // Using gemini-2.5-flash for fast, tactical comparisons
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: `
+    return await requestAi([
+      {
+        role: "user",
+        content: `
         Compare ${target.name} vs ${winner.name} (The Winner).
         Context: The user values these weights: ${Object.entries(weights).filter(e => e[1] > 0).map(e => `${e[0]}=${e[1]}`).join(',')}.
         Scores: ${target.name}=${target.finalScore}, ${winner.name}=${winner.finalScore}.
         
         Provide a 2-sentence reason why ${target.name} lost to ${winner.name}, focusing on the weighted categories where they fell short.
       `,
-    });
-    return response.text || "Comparison unavailable.";
+      },
+    ]);
   } catch (error) {
     return "AI comparison unavailable.";
   }
@@ -83,9 +101,10 @@ export const getVendorInsight = async (
     weights: WeightState
 ): Promise<string> => {
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `
+        return await requestAi([
+          {
+            role: "user",
+            content: `
                 Analyze ${vendor.name} for an RIA.
                 User Priorities: ${Object.entries(weights).filter(e => e[1] > 10).map(e => `${e[0]}`).join(', ')}.
                 
@@ -94,9 +113,9 @@ export const getVendorInsight = async (
                 - Prefer simple/stable over complex/bloated.
                 
                 Provide 3 concise bullet points on how this vendor fits this philosophy.
-            `
-        });
-        return response.text || "Insight unavailable.";
+            `,
+          },
+        ]);
     } catch (error) {
         return "Insight unavailable.";
     }
@@ -124,18 +143,16 @@ export const getChatResponse = async (
       Keep answers concise (under 100 words) and helpful.
     `;
 
-    // Using gemini-2.5-flash for interactive chat
-    const chat = ai.chats.create({
-      model: 'gemini-2.5-flash',
-      config: { systemInstruction },
-      history: history.map(h => ({
-        role: h.role,
-        parts: [{ text: h.text }]
-      }))
-    });
+    const mappedHistory: ApiChatMessage[] = history.map((h) => ({
+      role: h.role === "model" ? "assistant" : "user",
+      content: h.text,
+    }));
 
-    const result = await chat.sendMessage({ message });
-    return result.text || "I didn't catch that.";
+    return await requestAi([
+      { role: "system", content: systemInstruction },
+      ...mappedHistory.slice(-12),
+      { role: "user", content: message },
+    ]);
   } catch (error) {
     console.error(error);
     return "Sorry, I'm having trouble connecting right now.";
