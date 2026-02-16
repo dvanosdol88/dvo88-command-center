@@ -1,5 +1,5 @@
 ﻿import React, { Suspense } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import CapacityCalculator from './components/miniapps/CapacityCalculator';
 
@@ -12,7 +12,7 @@ const LeoAiLoading = () => <div className="p-10 text-center text-slate-500">Load
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/calculator" element={<CapacityCalculator />} />
@@ -29,7 +29,7 @@ const App: React.FC = () => {
         {/* Fallback to landing */}
         <Route path="*" element={<LandingPage />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 };
 

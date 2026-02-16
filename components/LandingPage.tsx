@@ -212,7 +212,7 @@ const LandingPage: React.FC = () => {
                   <a href="/ai-tools" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors">AI & dev tools</a>
                   <a href="#" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors">Client Onboarding</a>
                   {/* CHANGED LINK HERE */}
-                  <a href="#/calculator" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors">Capacity Calculator</a>
+                  <a href="/calculator" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors">Capacity Calculator</a>
                   <a href="https://672elmstreet.com" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors">672elmstreet.com</a> <a href="https://riabuilder.dvo88.com" target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-lime-500 transition-colors">RIA Builder</a>
               </nav>
 
@@ -236,7 +236,7 @@ const LandingPage: React.FC = () => {
                   Powerful, intuitive, and designed for <strong className="text-slate-800 dark:text-slate-200 font-semibold">modern advisors</strong>.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <a href="#/calculator" target="_blank" rel="noopener noreferrer" className="bg-emerald-700 text-white px-8 py-4 rounded-full font-bold text-lg w-full sm:w-auto shadow-lg hover:translate-y-[-2px] transition-transform text-center">
+                  <a href="/calculator" target="_blank" rel="noopener noreferrer" className="bg-emerald-700 text-white px-8 py-4 rounded-full font-bold text-lg w-full sm:w-auto shadow-lg hover:translate-y-[-2px] transition-transform text-center">
                       Launch Platform
                   </a>
                   <a href="#" className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors w-full sm:w-auto border border-transparent dark:border-slate-700">

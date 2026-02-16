@@ -54,7 +54,7 @@ const LeoAiHome: React.FC<Props> = ({ onLogout }) => {
             <div className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">
               Route
             </div>
-            <div className="mt-2 font-semibold">#/leo-ai</div>
+            <div className="mt-2 font-semibold">/leo-ai</div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">
               Change passcode/session key in `src/config/leoAi.ts`.
             </div>
@@ -66,4 +66,3 @@ const LeoAiHome: React.FC<Props> = ({ onLogout }) => {
 };
 
 export default LeoAiHome;
-
