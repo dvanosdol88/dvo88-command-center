@@ -1,5 +1,6 @@
-import { ProviderRouter, type AiProvider } from "@dvanosdol88/ai-core";
+import { ProviderRouter, type AiProvider, type ChatRequest, type ChatResponse } from "@dvanosdol88/ai-core";
 import { AI_MODELS, AI_PERSONA, AI_PROVIDER_ORDER, type AiProviderName } from "../../src/config/ai.js";
+import { PROJECTS } from "../../src/config/projects.js";
 import { AnthropicProvider } from "../providers/anthropic.js";
 import { GeminiProvider } from "../providers/gemini.js";
 import { OpenAiProvider } from "../providers/openai.js";
@@ -33,12 +34,60 @@ function buildProvidersInOrder(opts?: {
   }
 
   if (providers.length === 0) {
-    providers.push(new AnthropicProvider({ model: modelFor("anthropic"), systemPrompt }));
-    providers.push(new OpenAiProvider({ model: modelFor("openai"), systemPrompt }));
-    providers.push(new GeminiProvider({ model: modelFor("gemini"), systemPrompt }));
+    providers.push(new LocalFallbackProvider());
   }
 
   return providers;
+}
+
+function statusEmoji(status: string): string {
+  if (status === "green") return "🟢";
+  if (status === "yellow") return "🟡";
+  return "🔴";
+}
+
+function buildStatusSummary(): string {
+  const lines = PROJECTS.map((project, index) => {
+    return `${index + 1}. ${project.name} ${statusEmoji(project.status)} - Phase: ${project.phase}`;
+  });
+  return `Current portfolio status:\n${lines.join("\n")}`;
+}
+
+function buildPrioritySummary(): string {
+  const lines = PROJECTS.map((project) => {
+    const next = project.nextSteps[0] ?? "No next step defined";
+    return `- ${project.name}: ${next}`;
+  });
+  return `Suggested next actions by project:\n${lines.join("\n")}`;
+}
+
+class LocalFallbackProvider implements AiProvider {
+  readonly name = "local";
+
+  async chat(req: ChatRequest): Promise<ChatResponse> {
+    const userMessage = [...req.messages]
+      .reverse()
+      .find((message) => message.role === "user")
+      ?.content.trim()
+      .toLowerCase();
+
+    let content = "I can summarize project status, priorities, and next steps from the current portfolio config.";
+    if (userMessage) {
+      if (userMessage.includes("status") || userMessage.includes("summary") || userMessage.includes("summar")) {
+        content = buildStatusSummary();
+      } else if (userMessage.includes("next") || userMessage.includes("priority") || userMessage.includes("work on")) {
+        content = buildPrioritySummary();
+      }
+    }
+
+    return {
+      message: {
+        role: "assistant",
+        content,
+      },
+      model: "local-fallback",
+    };
+  }
 }
 
 export function createAiRouter(opts?: {
