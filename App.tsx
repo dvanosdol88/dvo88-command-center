@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LegacyLandingPage from './components/LegacyLandingPage';
 import ProjectDashboard from './components/ProjectDashboard';
+import ProjectDetailView from './components/ProjectDetailView';
 import CapacityCalculator from './components/miniapps/CapacityCalculator';
 
 // Lazy load DashboardApp to prevent top-level crashes (e.g. missing Firebase config) from breaking the Landing Page
@@ -34,6 +35,7 @@ const App: React.FC = () => {
             </Suspense>
           }
         />
+        <Route path="/project/:slug" element={<ProjectDetailView />} />
         {/* Fallback to landing */}
         <Route path="*" element={<LegacyLandingPage />} />
       </Routes>
