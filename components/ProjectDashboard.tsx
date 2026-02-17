@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PROJECTS, ProjectStatus } from "../src/config/projects";
+import ProjectChatDrawer from "./ProjectChatDrawer";
 
 const statusColorClass: Record<ProjectStatus, string> = {
   green: "bg-emerald-500",
@@ -377,6 +378,8 @@ const ProjectDashboard: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <ProjectChatDrawer />
     </div>
   );
 };

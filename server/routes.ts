@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { AI_APP_ID } from "../src/config/ai.js";
 import { createAiRouter } from "./services/ai-router.js";
+import { buildProjectSystemPrompt } from "./services/project-context.js";
 
 const require = createRequire(import.meta.url);
 
@@ -50,6 +51,7 @@ const chatSchema = z.object({
     )
     .min(1),
   provider: z.enum(["gemini", "openai", "anthropic"]).optional(),
+  context: z.enum(["vendors", "projects"]).optional(),
 });
 
 export function registerRoutes(app: Express) {
@@ -77,7 +79,13 @@ export function registerRoutes(app: Express) {
         return res.status(400).json({ ok: false, error: parsed.error.message });
       }
 
-      const router = createAiRouter({ forceProvider: parsed.data.provider });
+      const systemPromptExtra =
+        parsed.data.context === "projects" ? buildProjectSystemPrompt() : undefined;
+
+      const router = createAiRouter({
+        forceProvider: parsed.data.provider,
+        systemPromptExtra,
+      });
       const overallTimeoutMs = Number(process.env.AI_CHAT_OVERALL_TIMEOUT_MS || 25000);
 
       // eslint-disable-next-line no-console

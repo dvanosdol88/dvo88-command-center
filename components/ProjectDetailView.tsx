@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProjectBySlug, ProjectStatus } from "../src/config/projects";
+import ProjectChatDrawer from "./ProjectChatDrawer";
 
 const statusColorClass: Record<ProjectStatus, string> = {
   green: "bg-emerald-500",
@@ -447,6 +448,8 @@ const ProjectDetailView: React.FC = () => {
           )}
         </div>
       </main>
+
+      <ProjectChatDrawer />
     </div>
   );
 };
