@@ -11,7 +11,14 @@ const statusColorClass: Record<ProjectStatus, string> = {
 const formatPhase = (phase: string) => phase.charAt(0).toUpperCase() + phase.slice(1);
 
 const formatLastUpdated = (dateValue: string) => {
-  const parsed = new Date(dateValue);
+  const [yearStr, monthStr, dayStr] = dateValue.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+  const parsed =
+    Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+      ? new Date(year, month - 1, day)
+      : new Date(dateValue);
   if (Number.isNaN(parsed.getTime())) {
     return dateValue;
   }
