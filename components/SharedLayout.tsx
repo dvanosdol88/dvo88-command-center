@@ -18,6 +18,14 @@ const SharedLayout: React.FC<SharedLayoutProps> = ({ children }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) return;
+    const frame = requestAnimationFrame(() => {
+      inputsRef.current[0]?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isAuthenticated]);
+
   const handlePasscodeChange = (index: number, value: string) => {
     if (value.length > 1) value = value.slice(0, 1);
 

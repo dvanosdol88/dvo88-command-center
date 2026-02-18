@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.vercel
+.env*.local
+.playwright-cli/
+.tmp-vite-proxy.config.ts
+_build-tabs.ps1
+nul
