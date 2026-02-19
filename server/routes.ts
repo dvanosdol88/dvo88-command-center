@@ -8,6 +8,7 @@ import { AI_APP_ID } from "../src/config/ai.js";
 import {
   PROJECT_CHAT_ACTIONS,
   type ProjectChatActionProposal,
+  type ProjectChatPageContext,
 } from "../src/config/projectChat.js";
 import { createAiRouter } from "./services/ai-router.js";
 import {
@@ -171,7 +172,7 @@ export function registerRoutes(app: Express) {
         const proposal = maybeCreateProjectActionProposal({
           sessionId: parsed.data.sessionId,
           userMessage: lastUserMessage,
-          pageContext: parsed.data.projectPageContext as any,
+          pageContext: parsed.data.projectPageContext as ProjectChatPageContext | undefined,
         });
 
         if (proposal) {
