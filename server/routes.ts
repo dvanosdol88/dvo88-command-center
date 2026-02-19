@@ -5,7 +5,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { AI_APP_ID } from "../src/config/ai.js";
-import { PROJECT_CHAT_ACTIONS } from "../src/config/projectChat.js";
+import {
+  PROJECT_CHAT_ACTIONS,
+  type ProjectChatActionProposal,
+} from "../src/config/projectChat.js";
 import { createAiRouter } from "./services/ai-router.js";
 import {
   maybeCreateProjectActionProposal,
@@ -93,6 +96,38 @@ const chatSchema = z.object({
 const actionConfirmSchema = z.object({
   sessionId: z.string().min(8).max(120),
   proposalId: z.string().min(8).max(120),
+  proposal: z
+    .discriminatedUnion("action", [
+      z.object({
+        id: z.string().min(8).max(120),
+        action: z.literal(PROJECT_CHAT_ACTIONS.SUGGEST_NAVIGATE_PROJECT),
+        title: z.string().min(1).max(240),
+        reason: z.string().min(1).max(1000),
+        requiresConfirmation: z.boolean(),
+        destructive: z.boolean(),
+        createdAt: z.string().min(1).max(80),
+        payload: z.object({
+          projectSlug: z.string().min(1),
+          projectName: z.string().min(1),
+          route: z.string().min(1).max(200),
+        }),
+      }),
+      z.object({
+        id: z.string().min(8).max(120),
+        action: z.literal(PROJECT_CHAT_ACTIONS.MARK_PROJECT_FOCUS),
+        title: z.string().min(1).max(240),
+        reason: z.string().min(1).max(1000),
+        requiresConfirmation: z.boolean(),
+        destructive: z.boolean(),
+        createdAt: z.string().min(1).max(80),
+        payload: z.object({
+          projectSlug: z.string().min(1),
+          projectName: z.string().min(1),
+          note: z.string().min(1).max(240),
+        }),
+      }),
+    ])
+    .optional(),
   decision: z.enum(["confirm", "reject"]),
   expectedAction: z
     .enum([
@@ -207,6 +242,7 @@ export function registerRoutes(app: Express) {
       const actionResult = resolveProjectActionProposal({
         sessionId: parsed.data.sessionId,
         proposalId: parsed.data.proposalId,
+        proposal: parsed.data.proposal as ProjectChatActionProposal | undefined,
         decision: parsed.data.decision,
         expectedAction: parsed.data.expectedAction,
         idempotencyKey: parsed.data.idempotencyKey,

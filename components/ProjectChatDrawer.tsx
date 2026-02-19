@@ -92,6 +92,7 @@ const ProjectChatDrawer: React.FC = () => {
     try {
       const result = await confirmProjectChatAction({
         proposalId: proposal.id,
+        proposal,
         decision,
         expectedAction: proposal.action,
         sessionId: sessionIdRef.current,

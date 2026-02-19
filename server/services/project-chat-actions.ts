@@ -146,6 +146,28 @@ function createFocusPayload(project: ProjectConfig, userMessage: string): MarkPr
   };
 }
 
+function validateStatelessProposal(proposal: ProjectChatActionProposal): void {
+  const project = getProjectBySlug(proposal.payload.projectSlug);
+  if (!project) {
+    throw new ProjectChatActionError("Unknown project in action proposal.", 400);
+  }
+  if (project.name !== proposal.payload.projectName) {
+    throw new ProjectChatActionError("Action proposal project mismatch.", 400);
+  }
+
+  if (proposal.action === PROJECT_CHAT_ACTIONS.SUGGEST_NAVIGATE_PROJECT) {
+    const expectedRoute = `/project/${project.slug}`;
+    if (proposal.payload.route !== expectedRoute) {
+      throw new ProjectChatActionError("Invalid route in action proposal.", 400);
+    }
+    return;
+  }
+
+  if (proposal.payload.note.trim().length === 0 || proposal.payload.note.length > 240) {
+    throw new ProjectChatActionError("Invalid focus note in action proposal.", 400);
+  }
+}
+
 export function maybeCreateProjectActionProposal(opts: {
   sessionId: string;
   userMessage: string;
@@ -201,6 +223,7 @@ export function maybeCreateProjectActionProposal(opts: {
 export function resolveProjectActionProposal(opts: {
   sessionId: string;
   proposalId: string;
+  proposal?: ProjectChatActionProposal;
   decision: "confirm" | "reject";
   idempotencyKey: string;
   expectedAction?: ProjectChatActionName;
@@ -209,10 +232,7 @@ export function resolveProjectActionProposal(opts: {
     throw new ProjectChatActionError("Invalid idempotencyKey format.", 400);
   }
 
-  const session = sessions.get(opts.sessionId);
-  if (!session) {
-    throw new ProjectChatActionError("Unknown chat session.", 404);
-  }
+  const session = getSessionState(opts.sessionId);
 
   const idempotencyBucketKey = `${opts.sessionId}:${opts.idempotencyKey}`;
   const previousByIdempotency = session.idempotency.get(idempotencyBucketKey);
@@ -223,9 +243,17 @@ export function resolveProjectActionProposal(opts: {
     };
   }
 
-  const stored = session.proposals.get(opts.proposalId);
+  let stored = session.proposals.get(opts.proposalId);
   if (!stored) {
-    throw new ProjectChatActionError("Action proposal not found.", 404);
+    if (!opts.proposal || opts.proposal.id !== opts.proposalId) {
+      throw new ProjectChatActionError("Action proposal not found.", 404);
+    }
+    validateStatelessProposal(opts.proposal);
+    stored = {
+      proposal: opts.proposal,
+      status: "pending",
+    };
+    session.proposals.set(opts.proposalId, stored);
   }
 
   if (opts.expectedAction && stored.proposal.action !== opts.expectedAction) {
