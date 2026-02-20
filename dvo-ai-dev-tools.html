@@ -6,6 +6,66 @@
     <link rel="icon" href="data:,">
     <title>AI Agent Tools & Instructions Inventory</title>
     <style>
+        :root {
+            --bg: #2d3748;
+            --bg-section: rgba(0, 0, 0, 0.2);
+            --bg-card: rgba(0, 0, 0, 0.3);
+            --bg-item: rgba(255, 255, 255, 0.05);
+            --bg-nav: rgba(0, 0, 0, 0.25);
+            --text: #e2e8f0;
+            --text-muted: #a0aec0;
+            --text-dim: #718096;
+            --text-sub: #cbd5e0;
+            --accent: #7eb8da;
+            --accent-border: rgba(126, 184, 218, 0.3);
+            --border: rgba(255, 255, 255, 0.1);
+            --code-bg: rgba(0, 0, 0, 0.3);
+            --code-text: #c9b87a;
+            --table-header: rgba(126, 184, 218, 0.15);
+            --table-stripe: rgba(255, 255, 255, 0.02);
+            --claude-color: #d4a574;
+            --gemini-color: #7aa3d4;
+            --codex-color: #7ac47a;
+            --cursor-color: #b89ac4;
+            --has-color: #7ac47a;
+            --no-color: #4a5568;
+            --partial-color: #c9a87a;
+            --connected: #6a9a6a;
+            --disconnected: #9a6a6a;
+            --disabled: #9a8a6a;
+            --native-color: #7aa3d4;
+        }
+
+        [data-theme="light"] {
+            --bg: #f0f2f5;
+            --bg-section: rgba(255, 255, 255, 0.85);
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --bg-item: rgba(0, 0, 0, 0.04);
+            --bg-nav: rgba(255, 255, 255, 0.8);
+            --text: #1a202c;
+            --text-muted: #4a5568;
+            --text-dim: #718096;
+            --text-sub: #2d3748;
+            --accent: #2b6cb0;
+            --accent-border: rgba(43, 108, 176, 0.3);
+            --border: rgba(0, 0, 0, 0.12);
+            --code-bg: rgba(0, 0, 0, 0.06);
+            --code-text: #975a16;
+            --table-header: rgba(43, 108, 176, 0.1);
+            --table-stripe: rgba(0, 0, 0, 0.02);
+            --claude-color: #b7791f;
+            --gemini-color: #2b6cb0;
+            --codex-color: #276749;
+            --cursor-color: #6b46c1;
+            --has-color: #276749;
+            --no-color: #cbd5e0;
+            --partial-color: #975a16;
+            --connected: #276749;
+            --disconnected: #c53030;
+            --disabled: #975a16;
+            --native-color: #2b6cb0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,10 +74,11 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #2d3748;
-            color: #e2e8f0;
+            background: var(--bg);
+            color: var(--text);
             padding: 20px;
             min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
         }
 
         .top-nav {
@@ -28,53 +89,109 @@
             padding: 10px 12px;
             margin: 0 auto 14px;
             max-width: 1200px;
-            background: rgba(0, 0, 0, 0.25);
+            background: var(--bg-nav);
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
         }
 
         .top-nav a {
-            color: #cbd5e0;
+            color: var(--text-sub);
             text-decoration: none;
             font-size: 0.9em;
         }
 
-        .top-nav a:hover {
-            text-decoration: underline;
-        }
+        .top-nav a:hover { text-decoration: underline; }
 
         .top-nav .hint {
-            color: #a0aec0;
+            color: var(--text-muted);
             font-size: 0.85em;
         }
 
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-item);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            background: var(--bg-nav);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            background: var(--bg-item);
+            color: var(--text);
+        }
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
         h1 {
             text-align: center;
-            color: #7eb8da;
+            color: var(--accent);
             margin-bottom: 10px;
             font-size: 2em;
         }
 
         .subtitle {
             text-align: center;
-            color: #a0aec0;
+            color: var(--text-muted);
             margin-bottom: 25px;
             font-size: 0.9em;
         }
 
         .section {
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--bg-section);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
         }
 
         .section h2 {
-            color: #7eb8da;
+            color: var(--accent);
             margin-bottom: 15px;
             font-size: 1.2em;
-            border-bottom: 1px solid rgba(126, 184, 218, 0.3);
+            border-bottom: 1px solid var(--accent-border);
             padding-bottom: 8px;
         }
 
@@ -86,7 +203,7 @@
         }
 
         .instruction-card {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--bg-card);
             border-radius: 10px;
             padding: 15px;
             border-left: 3px solid;
@@ -116,34 +233,34 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-item);
             padding: 8px 12px;
             border-radius: 6px;
             font-family: 'Consolas', monospace;
             font-size: 0.8em;
         }
 
-        .file-item .path { color: #c9b87a; }
+        .file-item .path { color: var(--code-text); }
         .file-item .agent {
             font-size: 0.75em;
             padding: 2px 8px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--bg-item);
         }
 
-        .file-item .agent.claude { color: #d4a574; }
-        .file-item .agent.gemini { color: #7aa3d4; }
-        .file-item .agent.codex { color: #7ac47a; }
+        .file-item .agent.claude { color: var(--claude-color); }
+        .file-item .agent.gemini { color: var(--gemini-color); }
+        .file-item .agent.codex { color: var(--codex-color); }
 
         .instruction-content {
             margin-top: 12px;
             padding-top: 12px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+            border-top: 1px dashed var(--border);
         }
 
         .instruction-content h4 {
             font-size: 0.8em;
-            color: #a0aec0;
+            color: var(--text-muted);
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -151,7 +268,7 @@
 
         .content-preview {
             font-size: 0.75em;
-            color: #cbd5e0;
+            color: var(--text-sub);
             line-height: 1.5;
         }
 
@@ -170,7 +287,7 @@
             content: "•";
             position: absolute;
             left: 0;
-            color: #718096;
+            color: var(--text-dim);
         }
 
         /* Agent Cards Grid - 5 columns */
@@ -181,17 +298,17 @@
         }
 
         .agent-card {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--bg-card);
             border-radius: 10px;
             padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
             border-top: 3px solid;
         }
 
-        .agent-card.claude { border-top-color: #d4a574; }
-        .agent-card.gemini { border-top-color: #7aa3d4; }
-        .agent-card.codex { border-top-color: #7ac47a; }
-        .agent-card.cursor { border-top-color: #b89ac4; }
+        .agent-card.claude { border-top-color: var(--claude-color); }
+        .agent-card.gemini { border-top-color: var(--gemini-color); }
+        .agent-card.codex { border-top-color: var(--codex-color); }
+        .agent-card.cursor { border-top-color: var(--cursor-color); }
 
         .agent-header {
             display: flex;
@@ -199,7 +316,7 @@
             gap: 10px;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid var(--border);
         }
 
         .agent-icon {
@@ -210,7 +327,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2em;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-item);
         }
 
         .agent-name {
@@ -220,14 +337,14 @@
 
         .agent-subtitle {
             font-size: 0.7em;
-            color: #718096;
+            color: var(--text-dim);
             margin-top: 2px;
         }
 
-        .agent-card.claude .agent-name { color: #d4a574; }
-        .agent-card.gemini .agent-name { color: #7aa3d4; }
-        .agent-card.codex .agent-name { color: #7ac47a; }
-        .agent-card.cursor .agent-name { color: #b89ac4; }
+        .agent-card.claude .agent-name { color: var(--claude-color); }
+        .agent-card.gemini .agent-name { color: var(--gemini-color); }
+        .agent-card.codex .agent-name { color: var(--codex-color); }
+        .agent-card.cursor .agent-name { color: var(--cursor-color); }
 
         .tool-category {
             margin-bottom: 15px;
@@ -235,7 +352,7 @@
 
         .tool-category h3 {
             font-size: 0.75em;
-            color: #a0aec0;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 8px;
@@ -248,7 +365,7 @@
         }
 
         .tool-item {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-item);
             padding: 5px 8px;
             border-radius: 4px;
             font-size: 0.75em;
@@ -257,18 +374,18 @@
             justify-content: space-between;
         }
 
-        .tool-item.connected { border-left: 2px solid #6a9a6a; }
-        .tool-item.disconnected { border-left: 2px solid #9a6a6a; opacity: 0.6; }
-        .tool-item.disabled { border-left: 2px solid #9a8a6a; opacity: 0.7; }
-        .tool-item.native { border-left: 2px solid #7aa3d4; }
+        .tool-item.connected { border-left: 2px solid var(--connected); }
+        .tool-item.disconnected { border-left: 2px solid var(--disconnected); opacity: 0.6; }
+        .tool-item.disabled { border-left: 2px solid var(--disabled); opacity: 0.7; }
+        .tool-item.native { border-left: 2px solid var(--native-color); }
 
         .tool-count {
             font-size: 0.9em;
-            color: #718096;
+            color: var(--text-dim);
         }
 
         .config-location {
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--code-bg);
             border-radius: 6px;
             padding: 10px;
             margin-top: 10px;
@@ -276,7 +393,7 @@
             font-size: 0.65em;
         }
 
-        .config-location .path { color: #c9b87a; }
+        .config-location .path { color: var(--code-text); }
 
         /* Quick Stats Table - 5 columns */
         table {
@@ -287,12 +404,12 @@
         th, td {
             padding: 10px 12px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
         }
 
         th {
-            background: rgba(126, 184, 218, 0.15);
-            color: #7eb8da;
+            background: var(--table-header);
+            color: var(--accent);
             font-weight: 600;
             font-size: 0.85em;
         }
@@ -302,13 +419,13 @@
             width: 180px;
         }
 
-        th.claude { background: rgba(212, 165, 116, 0.2); color: #d4a574; }
-        th.gemini { background: rgba(122, 163, 212, 0.2); color: #7aa3d4; }
-        th.codex { background: rgba(122, 196, 122, 0.2); color: #7ac47a; }
-        th.cursor { background: rgba(184, 154, 196, 0.2); color: #b89ac4; }
+        th.claude { background: rgba(212, 165, 116, 0.2); color: var(--claude-color); }
+        th.gemini { background: rgba(122, 163, 212, 0.2); color: var(--gemini-color); }
+        th.codex { background: rgba(122, 196, 122, 0.2); color: var(--codex-color); }
+        th.cursor { background: rgba(184, 154, 196, 0.2); color: var(--cursor-color); }
 
         tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--table-stripe);
         }
 
         td.tool-name {
@@ -317,16 +434,16 @@
             font-size: 0.85em;
         }
 
-        .has { color: #7ac47a; }
-        .no { color: #4a5568; }
-        .partial { color: #c9a87a; }
+        .has { color: var(--has-color); }
+        .no { color: var(--no-color); }
+        .partial { color: var(--partial-color); }
 
         .category-row {
-            background: rgba(126, 184, 218, 0.08) !important;
+            background: var(--table-header) !important;
         }
 
         .category-row td {
-            color: #7eb8da;
+            color: var(--accent);
             font-weight: 600;
             text-align: left;
             padding-left: 15px;
@@ -336,30 +453,30 @@
         /* Future Feature Note */
         .future-note {
             background: rgba(126, 184, 218, 0.1);
-            border: 1px dashed rgba(126, 184, 218, 0.3);
+            border: 1px dashed var(--accent-border);
             border-radius: 8px;
             padding: 15px;
             margin-top: 15px;
         }
 
         .future-note h4 {
-            color: #7eb8da;
+            color: var(--accent);
             font-size: 0.85em;
             margin-bottom: 8px;
         }
 
         .future-note p {
             font-size: 0.8em;
-            color: #a0aec0;
+            color: var(--text-muted);
             line-height: 1.5;
         }
 
         .future-note code {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--code-bg);
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Consolas', monospace;
-            color: #c9b87a;
+            color: var(--code-text);
         }
 
         /* Explainer Section */
@@ -372,7 +489,7 @@
         }
 
         .explainer h2 {
-            color: #7eb8da;
+            color: var(--accent);
             margin-bottom: 15px;
             font-size: 1.1em;
         }
@@ -384,13 +501,13 @@
         }
 
         .explainer-item {
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--bg-card);
             border-radius: 8px;
             padding: 15px;
         }
 
         .explainer-item h3 {
-            color: #c9b87a;
+            color: var(--code-text);
             font-size: 0.95em;
             margin-bottom: 10px;
         }
@@ -398,20 +515,20 @@
         .explainer-item p {
             font-size: 0.85em;
             line-height: 1.6;
-            color: #cbd5e0;
+            color: var(--text-sub);
         }
 
         .explainer-item code {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--code-bg);
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Consolas', monospace;
-            color: #7ac47a;
+            color: var(--has-color);
             font-size: 0.9em;
         }
 
         .explainer-item .highlight {
-            color: #d4a574;
+            color: var(--claude-color);
             font-weight: 600;
         }
 
@@ -425,7 +542,7 @@
         }
 
         .claude-family h2 {
-            color: #d4a574;
+            color: var(--claude-color);
             margin-bottom: 15px;
         }
 
@@ -442,7 +559,7 @@
         }
 
         .family-node {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--bg-card);
             border-radius: 8px;
             padding: 12px 18px;
             border-left: 3px solid;
@@ -468,12 +585,12 @@
 
         .family-node p {
             font-size: 0.75em;
-            color: #a0aec0;
+            color: var(--text-muted);
             line-height: 1.4;
         }
 
         .family-arrow {
-            color: #718096;
+            color: var(--text-dim);
             font-size: 1.2em;
         }
 
@@ -483,11 +600,11 @@
             padding: 12px;
             margin-top: 15px;
             font-size: 0.8em;
-            color: #cbd5e0;
+            color: var(--text-sub);
         }
 
         .family-note strong {
-            color: #d4a574;
+            color: var(--claude-color);
         }
 
         /* Blurring Lines Section */
@@ -500,43 +617,338 @@
         }
 
         .blurring-lines h2 {
-            color: #b89ac4;
+            color: var(--cursor-color);
             margin-bottom: 15px;
         }
 
         .blurring-lines p {
             font-size: 0.85em;
-            color: #cbd5e0;
+            color: var(--text-sub);
             line-height: 1.6;
             margin-bottom: 10px;
         }
 
         .blurring-lines .insight {
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--bg-card);
             border-radius: 6px;
             padding: 12px;
             margin-top: 10px;
             font-style: italic;
-            color: #a0aec0;
+            color: var(--text-muted);
         }
 
         footer {
             text-align: center;
-            color: #718096;
+            color: var(--text-dim);
             margin-top: 30px;
             padding: 15px;
             font-size: 0.8em;
         }
+
+        /* Termius Hero */
+        .termius-hero {
+            background: linear-gradient(135deg, rgba(77, 201, 246, 0.15), rgba(77, 201, 246, 0.05));
+            border: 2px solid rgba(77, 201, 246, 0.4);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 25px;
+        }
+        .termius-hero h2 {
+            color: #4dc9f6;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+        }
+        .termius-hero .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .capability-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 16px;
+            border-left: 3px solid #4dc9f6;
+            transition: transform 0.15s;
+        }
+        .capability-card:hover { transform: translateY(-2px); }
+        .capability-card .cap-icon {
+            font-size: 1.4em;
+            margin-bottom: 8px;
+        }
+        .capability-card h4 {
+            color: #4dc9f6;
+            font-size: 0.95em;
+            margin-bottom: 6px;
+        }
+        .capability-card p {
+            font-size: 0.8em;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        /* Raycast Styles */
+        .raycast-hero {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(251, 146, 60, 0.08));
+            border: 2px solid rgba(251, 146, 60, 0.4);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 25px;
+        }
+        .raycast-hero h2 {
+            color: #fb923c;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+        }
+        .raycast-hero .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .raycast-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .raycast-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 16px;
+            border-left: 3px solid #fb923c;
+        }
+        .raycast-card h4 {
+            color: #fb923c;
+            font-size: 0.95em;
+            margin-bottom: 6px;
+        }
+        .raycast-card p {
+            font-size: 0.8em;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+        .raycast-ext-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .raycast-ext {
+            background: var(--bg-item);
+            border-radius: 8px;
+            padding: 10px 12px;
+            text-align: center;
+            font-size: 0.8em;
+        }
+        .raycast-ext .ext-icon { font-size: 1.3em; margin-bottom: 4px; }
+        .raycast-ext .ext-name { color: var(--text); font-weight: 500; }
+        .raycast-ext .ext-desc { color: var(--text-dim); font-size: 0.85em; margin-top: 2px; }
+
+        /* Shortcuts Tab */
+        .sc-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .sc-controls input, .sc-controls select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 0.9em;
+            outline: none;
+        }
+        .sc-controls input:focus, .sc-controls select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(126, 184, 218, 0.2);
+        }
+        .sc-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .sc-chip {
+            border: 1px solid var(--border);
+            background: var(--bg-item);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .sc-chip:hover { background: var(--bg-card); }
+        .sc-chip.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(126, 184, 218, 0.2);
+            background: rgba(126, 184, 218, 0.1);
+        }
+        .sc-table { width: 100%; border-collapse: collapse; }
+        .sc-table th {
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+            background: var(--table-header);
+            position: sticky;
+            top: 0;
+        }
+        .sc-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85em;
+            vertical-align: top;
+        }
+        .sc-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+        .sc-badge {
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
+            color: #fff;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .sc-badge.cursor { background: #3b82f6; }
+        .sc-badge.windows { background: #16a34a; }
+        .sc-badge.chrome { background: #ea580c; }
+        .sc-badge.wispr { background: #7c3aed; }
+        .sc-badge.raycast { background: #fb923c; }
+        .sc-badge.onenote { background: #a855f7; }
+        .sc-badge.termius { background: #4dc9f6; }
+        kbd {
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            padding: 2px 7px;
+            margin: 1px 2px;
+            font-size: 0.85em;
+            background: var(--code-bg);
+            color: var(--text);
+            white-space: nowrap;
+            font-family: 'Consolas', monospace;
+        }
+        .sc-meta {
+            padding: 10px 0;
+            font-size: 0.8em;
+            color: var(--text-dim);
+        }
+        .sc-empty {
+            padding: 18px;
+            color: #fca5a5;
+            display: none;
+        }
+        .sc-hint {
+            background: var(--bg-item);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 0.85em;
+            color: var(--text-sub);
+        }
+        .sc-table-wrap {
+            max-height: 65vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        mark {
+            background: rgba(250, 204, 21, 0.25);
+            color: #fde68a;
+            border-radius: 3px;
+            padding: 0 1px;
+        }
+
+        /* Global Search */
+        .global-search-wrap {
+            max-width: 1200px;
+            margin: 0 auto 14px;
+            position: relative;
+        }
+        .global-search {
+            width: 100%;
+            padding: 14px 18px 14px 44px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-section);
+            color: var(--text);
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .global-search:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(126, 184, 218, 0.15);
+        }
+        .global-search::placeholder { color: var(--text-dim); }
+        .global-search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 1.1em;
+            pointer-events: none;
+        }
+        .tab-count {
+            font-size: 0.75em;
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+        .searchable.search-hidden { display: none !important; }
+        .tab-panel.search-active { display: block !important; }
+        .tab-no-matches {
+            padding: 20px;
+            color: var(--text-dim);
+            font-style: italic;
+            text-align: center;
+            display: none;
+        }
+        .tab-no-matches.visible { display: block; }
     </style>
 </head>
 <body>
     <div class="top-nav">
         <a href="./all-shortcuts.html?view=shortcuts" target="_top">&larr; All Shortcuts</a>
         <div class="hint">Tip: open <code>all-shortcuts.html?view=tools</code> to embed this page</div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="theme-icon">&#9790;</span> <span id="theme-label">Light</span>
+        </button>
     </div>
 
     <h1>AI Agent Tools & Instructions Inventory</h1>
     <p class="subtitle">Unified view of MCP servers, tools, and instruction files across all agents</p>
+
+    <!-- Global Search -->
+    <div class="global-search-wrap">
+        <span class="global-search-icon">&#128269;</span>
+        <input class="global-search" id="globalSearch" type="text" placeholder="Search everything — shortcuts, tools, SSH setup, Raycast features..." />
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tools')">&#128736; AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('ssh')">&#128273; SSH / Termius</button>
+        <button class="tab-btn" onclick="switchTab('raycast')">&#9889; Raycast</button>
+        <button class="tab-btn" onclick="switchTab('shortcuts')">&#9000; Shortcuts</button>
+    </div>
+
+    <!-- TAB: AI Tools -->
+    <div id="tab-tools" class="tab-panel active">
+    <div class="tab-no-matches" id="noMatchTools">No matches in AI Tools for this search.</div>
 
     <!-- Instruction Files Section -->
     <div class="section">
@@ -1112,9 +1524,547 @@
         </div>
     </div>
 
+    </div><!-- END tab-tools -->
+
+    <!-- TAB: SSH / Termius -->
+    <div id="tab-ssh" class="tab-panel">
+    <div class="tab-no-matches" id="noMatchSSH">No matches in SSH / Termius for this search.</div>
+
+    <!-- Termius Hero: What You Can Do -->
+    <div class="termius-hero">
+        <h2>🚀 What You Can Do with Termius</h2>
+        <p class="hero-subtitle">Your SSH client syncs across iPhone, Windows, and any device — here's everything it unlocks.</p>
+        <div class="capability-grid">
+            <div class="capability-card">
+                <div class="cap-icon">🔗</div>
+                <h4>Cross-Device Sync</h4>
+                <p>Hosts, SSH keys, and snippets sync automatically via Vault. Configure a host on your phone, connect from your desktop — or vice versa.</p>
+            </div>
+            <div class="capability-card">
+                <div class="cap-icon">🔀</div>
+                <h4>Port Forwarding</h4>
+                <p>Create SSH tunnels to access remote services. Run a dev server on :3000 on your Linux box — access it from anywhere through Termius.</p>
+            </div>
+            <div class="capability-card">
+                <div class="cap-icon">📂</div>
+                <h4>SFTP File Transfer</h4>
+                <p>Built-in file browser lets you drag and drop files between your local device and any connected host. No separate SFTP client needed.</p>
+            </div>
+            <div class="capability-card">
+                <div class="cap-icon">📝</div>
+                <h4>Snippets</h4>
+                <p>Save frequently used commands (deploy scripts, service restarts, log tails) and sync them across all devices. Execute with one tap.</p>
+            </div>
+            <div class="capability-card">
+                <div class="cap-icon">🔑</div>
+                <h4>Keychain</h4>
+                <p>Manage SSH keys, passwords, and certificates in one encrypted vault. Assign keys to specific hosts — Termius handles auth automatically.</p>
+            </div>
+            <div class="capability-card">
+                <div class="cap-icon">📑</div>
+                <h4>Terminal Tabs & Groups</h4>
+                <p>Run multiple SSH sessions in tabs. Group related hosts together. Split panes to monitor multiple machines side by side.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Hosts & Setup -->
+    <div class="section" style="border-left: 3px solid #4dc9f6;">
+        <h2>🔑 Network Hosts & SSH Setup</h2>
+
+        <div class="explainer-grid">
+            <!-- Network Map -->
+            <div class="explainer-item">
+                <h3>Network Hosts</h3>
+                <p>
+                    <strong style="color: #4dc9f6;">DVO-HP (Windows)</strong><br>
+                    IP: <code>192.168.4.45</code> &nbsp;|&nbsp; Port: <code>22</code><br>
+                    OS: Windows 10 (Build 26200) &nbsp;|&nbsp; SSH: OpenSSH_for_Windows_9.5<br>
+                    User: <code>david</code> (Administrators group)<br>
+                    Auth: SSH key (publickey)<br>
+                    <br>
+                    <strong style="color: #7ac47a;">ThinkBox (Ubuntu)</strong><br>
+                    IP: <code>TBD — run hostname -I on the box</code><br>
+                    Port: <code>22</code> &nbsp;|&nbsp; OS: Ubuntu<br>
+                    Auth: SSH key (to be configured)<br>
+                    Status: <span class="partial">Pending setup</span>
+                </p>
+            </div>
+
+            <!-- Windows SSH Gotchas -->
+            <div class="explainer-item">
+                <h3>Windows OpenSSH Gotchas</h3>
+                <p>
+                    <span class="highlight">1. No file extensions!</span><br>
+                    The key file must be named <code>authorized_keys</code> — NOT <code>authorized_keys.txt</code>. OpenSSH ignores files with extensions.<br>
+                    <br>
+                    <span class="highlight">2. Admin users use a different key location</span><br>
+                    Standard user: <code>~\.ssh\authorized_keys</code><br>
+                    Admin user: <code>C:\ProgramData\ssh\administrators_authorized_keys</code><br>
+                    Check with: <code>net user david</code> → look for *Administrators<br>
+                    <br>
+                    <span class="highlight">3. Permissions must be locked down</span><br>
+                    <code>icacls "C:\ProgramData\ssh\administrators_authorized_keys" /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F"</code><br>
+                    Only SYSTEM and Administrators — no inherited perms.<br>
+                    <br>
+                    <span class="highlight">4. Config lives at:</span><br>
+                    <code>C:\ProgramData\ssh\sshd_config</code><br>
+                    The <code>Match Group administrators</code> block at the bottom controls the redirect.
+                </p>
+            </div>
+
+            <!-- Linux SSH Setup -->
+            <div class="explainer-item">
+                <h3>Ubuntu SSH Setup (ThinkBox)</h3>
+                <p>
+                    <strong>Install & enable:</strong><br>
+                    <code>sudo apt install openssh-server</code><br>
+                    <code>sudo systemctl enable ssh</code><br>
+                    <code>sudo systemctl start ssh</code><br>
+                    <br>
+                    <strong>Get IP:</strong> <code>hostname -I</code><br>
+                    <br>
+                    <strong>Key auth:</strong><br>
+                    Add public key to <code>~/.ssh/authorized_keys</code><br>
+                    <code>chmod 700 ~/.ssh</code><br>
+                    <code>chmod 600 ~/.ssh/authorized_keys</code><br>
+                    <br>
+                    <em style="color: #a0aec0;">Linux is much simpler — no admin user quirks, no special file locations. Just get permissions right.</em>
+                </p>
+            </div>
+
+        </div>
+
+        <div class="future-note">
+            <h4>📋 TODO: ThinkBox Setup</h4>
+            <p>
+                1. Install openssh-server on Ubuntu &nbsp;|&nbsp;
+                2. Get static IP (or set one via router) &nbsp;|&nbsp;
+                3. Export public key from Termius → add to <code>~/.ssh/authorized_keys</code> &nbsp;|&nbsp;
+                4. Add as new host in Termius &nbsp;|&nbsp;
+                5. Test connection
+            </p>
+        </div>
+    </div>
+
+    </div><!-- END tab-ssh -->
+
+    <!-- TAB: Raycast -->
+    <div id="tab-raycast" class="tab-panel">
+    <div class="tab-no-matches" id="noMatchRaycast">No matches in Raycast for this search.</div>
+
+    <!-- Raycast Hero -->
+    <div class="raycast-hero">
+        <h2>⚡ Raycast for Windows</h2>
+        <p class="hero-subtitle">Keyboard-driven launcher and productivity toolkit. Public beta since Nov 2025. Install via Microsoft Store or <code>winget install raycast</code></p>
+        <div class="raycast-grid">
+            <div class="raycast-card">
+                <h4>🚀 Launcher</h4>
+                <p><kbd>Alt</kbd>+<kbd>Space</kbd> opens Raycast. Search apps, files, commands, and extensions instantly. Fuzzy matching, no mouse needed. Replaces Windows Start menu search.</p>
+            </div>
+            <div class="raycast-card">
+                <h4>📋 Clipboard History</h4>
+                <p>Tracks everything you copy — text, images, links. Filter by type, search history, paste as plain text. Assign a hotkey (e.g. <kbd>Win</kbd>+<kbd>V</kbd>) to open directly. Beats Windows built-in clipboard.</p>
+            </div>
+            <div class="raycast-card">
+                <h4>🪟 Window Management</h4>
+                <p>Resize and position windows with keyboard commands. Split screen, thirds, center — all via typed aliases like <code>LT</code> (left third) or <code>RTT</code> (right two-thirds). No mouse dragging.</p>
+            </div>
+            <div class="raycast-card">
+                <h4>📝 Snippets</h4>
+                <p>Text expansion that works everywhere. Type <code>@adr</code> → your full address. Supports dynamic arguments and dropdowns. Auto-expansion works system-wide. Syncs across devices (Pro).</p>
+            </div>
+            <div class="raycast-card">
+                <h4>🤖 Quick AI</h4>
+                <p><strong>Free during beta!</strong> Type a question, hit <kbd>Tab</kbd> — get an answer with citations. Powered by GPT-5 mini. Maintains context for follow-ups. Also available: AI Commands for selected text (fix spelling, summarize, etc.).</p>
+            </div>
+            <div class="raycast-card">
+                <h4>🔍 File Search</h4>
+                <p>Raycast built their own file indexer from scratch (Windows Search wasn't good enough). Fast, accurate, respects <code>.gitignore</code>. Configure indexed paths in settings.</p>
+            </div>
+            <div class="raycast-card">
+                <h4>🔗 Quicklinks</h4>
+                <p>Bookmarks with superpowers. Create links to URLs, folders, or apps with dynamic parameters. Example: <code>gh {query}</code> → searches GitHub. Assign hotkeys for instant access.</p>
+            </div>
+            <div class="raycast-card">
+                <h4>🧮 Calculator</h4>
+                <p>Math right in the launcher. Type calculations, unit conversions, currency exchange. Results copy to clipboard. No app switching needed.</p>
+            </div>
+            <div class="raycast-card">
+                <h4>😀 Emoji Picker</h4>
+                <p>Search and insert emoji from the launcher. Faster than <kbd>Win</kbd>+<kbd>.</kbd> because it uses the same fuzzy search as everything else.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extensions -->
+    <div class="section">
+        <h2>🧩 Extensions Ecosystem</h2>
+        <p style="color: var(--text-sub); margin-bottom: 15px; font-size: 0.9em;">
+            Extensions are built with React + TypeScript. Most macOS extensions work on Windows out of the box. Browse the store at <code>raycast.com/store</code>.
+        </p>
+        <div class="raycast-ext-grid">
+            <div class="raycast-ext">
+                <div class="ext-icon">🐙</div>
+                <div class="ext-name">GitHub</div>
+                <div class="ext-desc">Issues, PRs, notifications</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">💬</div>
+                <div class="ext-name">Slack</div>
+                <div class="ext-desc">Search, status, messages</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">📐</div>
+                <div class="ext-name">Linear</div>
+                <div class="ext-desc">Create & search issues</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">📅</div>
+                <div class="ext-name">Google Calendar</div>
+                <div class="ext-desc">View agenda, join meetings</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">▶️</div>
+                <div class="ext-name">YouTube</div>
+                <div class="ext-desc">Search videos, channels</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">🎵</div>
+                <div class="ext-name">Music</div>
+                <div class="ext-desc">Library, playback control</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">⚙️</div>
+                <div class="ext-name">System</div>
+                <div class="ext-desc">Processes, lock, sleep</div>
+            </div>
+            <div class="raycast-ext">
+                <div class="ext-icon">⌨️</div>
+                <div class="ext-name">Typing Practice</div>
+                <div class="ext-desc">Monkeytype-powered drills</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup & Config -->
+    <div class="section">
+        <h2>⚙️ Setup & Configuration</h2>
+        <div class="explainer-grid">
+            <div class="explainer-item">
+                <h3>Installation</h3>
+                <p>
+                    <strong>Microsoft Store:</strong> Search "Raycast" or visit the store page<br><br>
+                    <strong>Winget:</strong> <code>winget install raycast</code><br><br>
+                    <strong>Requirements:</strong> Windows 10 (21H2+) or Windows 11<br><br>
+                    <strong>Import from Mac:</strong> Use "Export Settings &amp; Data" on macOS → transfer <code>.rayconfig</code> file → "Import Settings &amp; Data" on Windows. Supports Quicklinks, Snippets, and settings.
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>Key Concepts</h3>
+                <p>
+                    <span class="highlight">Hotkeys</span> — Assign global keyboard shortcuts to any command. Open clipboard history, launch an app, or trigger an extension — without opening Raycast first.<br><br>
+                    <span class="highlight">Aliases</span> — Short text commands for any action. Type <code>LT</code> in the launcher → move window to left third. Customize per command.<br><br>
+                    <span class="highlight">Run Commands</span> — Create custom shell commands, execute from root search, assign hotkeys. Replaces <kbd>Win</kbd>+<kbd>R</kbd> Run dialog.<br><br>
+                    <span class="highlight">Confetti</span> — Yes, there's a confetti command. Type "confetti" and enjoy. 🎉
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coming Soon -->
+    <div class="future-note">
+        <h4>🔮 Coming to Windows (Not Yet Available)</h4>
+        <p>
+            <strong>AI Chat</strong> (full multi-turn with model selection) &nbsp;|&nbsp;
+            <strong>Cloud Sync</strong> (sync settings across devices) &nbsp;|&nbsp;
+            <strong>Raycast Notes</strong> &nbsp;|&nbsp;
+            <strong>Calendar integration</strong> &nbsp;|&nbsp;
+            <strong>Raycast Focus</strong> (distraction blocking)<br><br>
+            The team ships bi-weekly updates. Windows is catching up to macOS feature parity fast.
+        </p>
+    </div>
+
+    </div><!-- END tab-raycast -->
+
+    <!-- TAB: Shortcuts -->
+    <div id="tab-shortcuts" class="tab-panel">
+    <div class="section">
+        <h2>⌨️ All Shortcuts</h2>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9em;">Search by command, key binding, category, or application. Fuzzy matching enabled.</p>
+
+        <div class="sc-hint" id="scHint">Type a command or key combo (e.g. devtools, ctrl shift t, win left, wispr paste).</div>
+
+        <div class="sc-controls">
+            <input id="scSearch" type="text" placeholder="Try: devtools, ctrl shft t, windows snap, wispr paste..." />
+            <select id="scCategory"><option value="all">All categories</option></select>
+        </div>
+
+        <div class="sc-chips" id="scChips"></div>
+
+        <div class="sc-table-wrap">
+            <table class="sc-table">
+                <thead>
+                    <tr><th>Application</th><th>Category</th><th>Command</th><th>Key Binding</th></tr>
+                </thead>
+                <tbody id="scRows"></tbody>
+            </table>
+        </div>
+        <div class="sc-empty" id="scEmpty">No matches. Try fewer words or different key fragments.</div>
+        <div class="sc-meta" id="scMeta"></div>
+    </div>
+    </div><!-- END tab-shortcuts -->
+
     <footer>
-        Last updated: January 30, 2026 | All instruction files synced with unified rules<br>
+        Last updated: February 15, 2026 | All instruction files synced with unified rules<br>
         <em>Generated by Claude Desktop with Desktop Commander (that's me! 🟠)</em>
     </footer>
+    <script>
+        /* ── Tab & Theme ── */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            const label = document.getElementById('theme-label');
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                icon.innerHTML = '☾'; label.textContent = 'Light';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                icon.innerHTML = '☀'; label.textContent = 'Dark';
+            }
+        }
+
+        /* ── Shortcuts Data ── */
+        const SC = [
+            {a:'Cursor',c:'Core',n:'Command Palette',k:'Ctrl+Shift+P'},
+            {a:'Cursor',c:'Core',n:'Keyboard Shortcuts UI',k:'Ctrl+K, Ctrl+S'},
+            {a:'Cursor',c:'Core',n:'Open Settings',k:'Ctrl+,'},
+            {a:'Cursor',c:'Core',n:'Quick Open file',k:'Ctrl+P'},
+            {a:'Cursor',c:'Core',n:'Global Search',k:'Ctrl+Shift+F'},
+            {a:'Cursor',c:'Core',n:'Explorer',k:'Ctrl+Shift+E'},
+            {a:'Cursor',c:'Core',n:'Source Control',k:'Ctrl+Shift+G'},
+            {a:'Cursor',c:'Core',n:'Terminal toggle',k:'Ctrl+`'},
+            {a:'Cursor',c:'Editing',n:'Copy line down/up',k:'Shift+Alt+Down / Shift+Alt+Up'},
+            {a:'Cursor',c:'Editing',n:'Move line down/up',k:'Alt+Down / Alt+Up'},
+            {a:'Cursor',c:'Editing',n:'Delete line',k:'Ctrl+Shift+K'},
+            {a:'Cursor',c:'Editing',n:'Format document',k:'Shift+Alt+F'},
+            {a:'Cursor',c:'Editing',n:'Rename symbol',k:'F2'},
+            {a:'Cursor',c:'Editing',n:'Quick Fix / code actions',k:'Ctrl+.'},
+            {a:'Cursor',c:'Editing',n:'Go to definition',k:'F12'},
+            {a:'Cursor',c:'Editing',n:'Peek definition',k:'Alt+F12'},
+            {a:'Cursor',c:'Selection',n:'Add cursor above/below',k:'Ctrl+Alt+Up / Ctrl+Alt+Down'},
+            {a:'Cursor',c:'Selection',n:'Add next match',k:'Ctrl+D'},
+            {a:'Cursor',c:'Selection',n:'Select all matches',k:'Ctrl+Shift+L'},
+            {a:'Cursor',c:'Selection',n:'Column selection',k:'Shift+Alt + mouse drag'},
+            {a:'Cursor',c:'Tabs',n:'New file',k:'Ctrl+N'},
+            {a:'Cursor',c:'Tabs',n:'Close editor',k:'Ctrl+W'},
+            {a:'Cursor',c:'Tabs',n:'Reopen closed editor',k:'Ctrl+Shift+T'},
+            {a:'Cursor',c:'Tabs',n:'Split editor',k:'Ctrl+\\'},
+            {a:'Cursor',c:'Tabs',n:'Navigate tabs',k:'Ctrl+Tab'},
+            {a:'Cursor',c:'Terminal',n:'New terminal',k:'Ctrl+Shift+`'},
+            {a:'Cursor',c:'Terminal',n:'Focus terminal',k:'Ctrl+`'},
+            {a:'Windows',c:'Essential',n:'Start menu',k:'Win'},
+            {a:'Windows',c:'Essential',n:'Search',k:'Win+S'},
+            {a:'Windows',c:'Essential',n:'Run dialog',k:'Win+R'},
+            {a:'Windows',c:'Essential',n:'Settings',k:'Win+I'},
+            {a:'Windows',c:'Essential',n:'Lock PC',k:'Win+L'},
+            {a:'Windows',c:'Essential',n:'Quick settings',k:'Win+A'},
+            {a:'Windows',c:'Essential',n:'Notifications/calendar',k:'Win+N'},
+            {a:'Windows',c:'Window management',n:'Snap left/right',k:'Win+Left / Win+Right'},
+            {a:'Windows',c:'Window management',n:'Maximize',k:'Win+Up'},
+            {a:'Windows',c:'Window management',n:'Minimize',k:'Win+Down'},
+            {a:'Windows',c:'Window management',n:'Task view',k:'Win+Tab'},
+            {a:'Windows',c:'Window management',n:'Switch apps',k:'Alt+Tab'},
+            {a:'Windows',c:'Window management',n:'Minimize all',k:'Win+M'},
+            {a:'Windows',c:'Window management',n:'Show desktop',k:'Win+D'},
+            {a:'Windows',c:'Virtual desktops',n:'New desktop',k:'Win+Ctrl+D'},
+            {a:'Windows',c:'Virtual desktops',n:'Next/previous desktop',k:'Win+Ctrl+Right / Win+Ctrl+Left'},
+            {a:'Windows',c:'Virtual desktops',n:'Close current desktop',k:'Win+Ctrl+F4'},
+            {a:'Windows',c:'File and clipboard',n:'File Explorer',k:'Win+E'},
+            {a:'Windows',c:'File and clipboard',n:'Copy / paste / cut',k:'Ctrl+C / Ctrl+V / Ctrl+X'},
+            {a:'Windows',c:'File and clipboard',n:'Undo / redo',k:'Ctrl+Z / Ctrl+Y'},
+            {a:'Windows',c:'File and clipboard',n:'Clipboard history',k:'Win+V'},
+            {a:'Windows',c:'File and clipboard',n:'Emoji/symbol panel',k:'Win+.'},
+            {a:'Windows',c:'File and clipboard',n:'Screenshot area',k:'Win+Shift+S'},
+            {a:'Windows',c:'File and clipboard',n:'Save full screenshot',k:'Win+PrtScn'},
+            {a:'Windows',c:'Utilities',n:'Narrator toggle',k:'Ctrl+Win+Enter'},
+            {a:'Windows',c:'Utilities',n:'Magnifier open/close',k:'Win++ / Win+Esc'},
+            {a:'Windows',c:'Utilities',n:'Xbox Game Bar',k:'Win+G'},
+            {a:'Windows',c:'Utilities',n:'Project display mode',k:'Win+P'},
+            {a:'Chrome',c:'Tabs and windows',n:'New tab',k:'Ctrl+T'},
+            {a:'Chrome',c:'Tabs and windows',n:'New window',k:'Ctrl+N'},
+            {a:'Chrome',c:'Tabs and windows',n:'New incognito window',k:'Ctrl+Shift+N'},
+            {a:'Chrome',c:'Tabs and windows',n:'Close tab',k:'Ctrl+W'},
+            {a:'Chrome',c:'Tabs and windows',n:'Reopen closed tab',k:'Ctrl+Shift+T'},
+            {a:'Chrome',c:'Tabs and windows',n:'Next/previous tab',k:'Ctrl+Tab / Ctrl+Shift+Tab'},
+            {a:'Chrome',c:'Tabs and windows',n:'Jump to tab 1-8',k:'Ctrl+1 ... Ctrl+8'},
+            {a:'Chrome',c:'Tabs and windows',n:'Last tab',k:'Ctrl+9'},
+            {a:'Chrome',c:'Navigation',n:'Address bar focus',k:'Ctrl+L / Alt+D'},
+            {a:'Chrome',c:'Navigation',n:'Back / forward',k:'Alt+Left / Alt+Right'},
+            {a:'Chrome',c:'Navigation',n:'Reload',k:'Ctrl+R'},
+            {a:'Chrome',c:'Navigation',n:'Hard reload',k:'Ctrl+Shift+R'},
+            {a:'Chrome',c:'Navigation',n:'Stop loading',k:'Esc'},
+            {a:'Chrome',c:'Navigation',n:'Home',k:'Alt+Home'},
+            {a:'Chrome',c:'Page actions',n:'Find in page',k:'Ctrl+F'},
+            {a:'Chrome',c:'Page actions',n:'Save page',k:'Ctrl+S'},
+            {a:'Chrome',c:'Page actions',n:'Print',k:'Ctrl+P'},
+            {a:'Chrome',c:'Page actions',n:'Zoom in/out/reset',k:'Ctrl++ / Ctrl+- / Ctrl+0'},
+            {a:'Chrome',c:'Page actions',n:'Full screen',k:'F11'},
+            {a:'Chrome',c:'Tools',n:'Downloads',k:'Ctrl+J'},
+            {a:'Chrome',c:'Tools',n:'History',k:'Ctrl+H'},
+            {a:'Chrome',c:'Tools',n:'Bookmarks manager',k:'Ctrl+Shift+O'},
+            {a:'Chrome',c:'Tools',n:'Developer tools',k:'Ctrl+Shift+I'},
+            {a:'Chrome',c:'Tools',n:'View source',k:'Ctrl+U'},
+            {a:'Chrome',c:'Tools',n:'Task Manager (Chrome)',k:'Shift+Esc'},
+            {a:'Chrome',c:'Extensions',n:'Manage extension keybindings',k:'chrome://extensions/shortcuts'},
+            {a:'Wispr Flow',c:'Voice',n:'Push-to-talk',k:'Ctrl+Shift+Space'},
+            {a:'Wispr Flow',c:'Voice',n:'Hands-free mode',k:'Ctrl+Shift+F'},
+            {a:'Wispr Flow',c:'Voice',n:'Paste last transcript',k:'Alt+Shift+Z'},
+            {a:'Raycast',c:'General',n:'Open launcher',k:'Alt+Space'},
+            {a:'Raycast',c:'General',n:'Open Settings',k:'Ctrl+,'},
+            {a:'Raycast',c:'Launcher',n:'Launch selected item',k:'Enter'},
+            {a:'Raycast',c:'Launcher',n:'Jump to Apps section',k:'Ctrl+Down'},
+            {a:'Raycast',c:'Launcher',n:'Open actions for item',k:'Ctrl+K'},
+            {a:'Raycast',c:'Launcher',n:'Quick AI (ask a question)',k:'Type question + Tab'},
+            {a:'Raycast',c:'Window Mgmt',n:'Left half',k:'Alias: LH'},
+            {a:'Raycast',c:'Window Mgmt',n:'Right half',k:'Alias: RH'},
+            {a:'Raycast',c:'Window Mgmt',n:'Left third',k:'Alias: LT'},
+            {a:'Raycast',c:'Window Mgmt',n:'Right two-thirds',k:'Alias: RTT'},
+            {a:'Raycast',c:'Window Mgmt',n:'Center window',k:'Alias: C'},
+            {a:'Raycast',c:'Window Mgmt',n:'Maximize',k:'Alias: MAX'},
+            {a:'Raycast',c:'Snippets',n:'Auto-expand snippet',k:'Type keyword (e.g. @adr)'},
+            {a:'Raycast',c:'Snippets',n:'Search snippets',k:'Alt+Space → snippets'},
+            {a:'Raycast',c:'Clipboard',n:'Open clipboard history',k:'Assign custom hotkey'},
+            {a:'Raycast',c:'Clipboard',n:'Paste as plain text',k:'Action in clipboard view'},
+            {a:'Termius',c:'Connection',n:'New host',k:'UI: NEW HOST button'},
+            {a:'Termius',c:'Connection',n:'Connect to host',k:'Select host → Connect'},
+            {a:'Termius',c:'Connection',n:'Quick connect',k:'Type user@host in search bar'},
+            {a:'Termius',c:'Terminal',n:'New tab',k:'Ctrl+T (in session)'},
+            {a:'Termius',c:'Terminal',n:'Split pane',k:'UI: split button'},
+            {a:'Termius',c:'Transfer',n:'Open SFTP',k:'UI: SFTP tab on host'},
+            {a:'OneNote',c:'Pages and sections',n:'New page',k:'Ctrl+N'},
+            {a:'OneNote',c:'Pages and sections',n:'New section',k:'Ctrl+T'},
+            {a:'OneNote',c:'Pages and sections',n:'Next page',k:'Ctrl+PageDown'},
+            {a:'OneNote',c:'Pages and sections',n:'Previous page',k:'Ctrl+PageUp'},
+            {a:'OneNote',c:'Pages and sections',n:'Go to page title',k:'Ctrl+Shift+T'},
+            {a:'OneNote',c:'Editing',n:'Copy / paste / cut',k:'Ctrl+C / Ctrl+V / Ctrl+X'},
+            {a:'OneNote',c:'Editing',n:'Undo / redo',k:'Ctrl+Z / Ctrl+Y'},
+            {a:'OneNote',c:'Editing',n:'Select all',k:'Ctrl+A'},
+            {a:'OneNote',c:'Navigation',n:'Context menu',k:'Shift+F10'},
+            {a:'OneNote',c:'Search and organization',n:'Find on page',k:'Ctrl+F'},
+            {a:'OneNote',c:'Search and organization',n:'Search all notebooks',k:'Ctrl+E'},
+            {a:'OneNote',c:'Tagging',n:'Apply/clear To-Do tag',k:'Ctrl+1'},
+        ];
+
+        const badgeMap = {
+            'Cursor':'cursor','Windows':'windows','Chrome':'chrome',
+            'Wispr Flow':'wispr','Raycast':'raycast','OneNote':'onenote','Termius':'termius'
+        };
+
+        /* ── Shortcuts Search Engine ── */
+        const scRows = document.getElementById('scRows');
+        const scSearch = document.getElementById('scSearch');
+        const scChips = document.getElementById('scChips');
+        const scCat = document.getElementById('scCategory');
+        const scMeta = document.getElementById('scMeta');
+        const scEmpty = document.getElementById('scEmpty');
+        const scHint = document.getElementById('scHint');
+        let scApp = 'all';
+
+        function norm(v) { return (v||'').toLowerCase().replace(/[^a-z0-9]+/g,''); }
+
+        function fuzzy(needle, hay) {
+            if (!needle) return true;
+            let i = 0;
+            for (const ch of hay) { if (ch === needle[i]) i++; if (i === needle.length) return true; }
+            return false;
+        }
+
+        function matchItem(q, item) {
+            if (!q.trim()) return true;
+            const tokens = q.toLowerCase().trim().split(/\s+/);
+            const fields = [item.a, item.c, item.n, item.k];
+            return tokens.every(t => {
+                const tn = norm(t);
+                return fields.some(f => {
+                    const raw = String(f||'').toLowerCase();
+                    return raw.includes(t) || fuzzy(tn, norm(f));
+                });
+            });
+        }
+
+        function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        function highlight(text, q) {
+            if (!q.trim()) return esc(text);
+            const tokens = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+            const chars = [], pos = [];
+            for (let i = 0; i < text.length; i++) { if (/[a-z0-9]/i.test(text[i])) { chars.push(text[i].toLowerCase()); pos.push(i); } }
+            const nrm = chars.join('');
+            const marked = new Set();
+            for (const t of tokens) {
+                const tn = norm(t); if (!tn) continue;
+                const di = nrm.indexOf(tn);
+                if (di !== -1) { for (let i=0;i<tn.length;i++) marked.add(pos[di+i]); continue; }
+                let j=0; const seq=[];
+                for (let i=0;i<nrm.length&&j<tn.length;i++) { if(nrm[i]===tn[j]){seq.push(pos[i]);j++;} }
+                if(j===tn.length) seq.forEach(p=>marked.add(p));
+            }
+            if (!marked.size) return esc(text);
+            let out='',open=false;
+            for (let i=0;i<text.length;i++) {
+                if(marked.has(i)&&!open){out+='<mark>';open=true;}
+                if(!marked.has(i)&&open){out+='</mark>';open=false;}
+                out+=esc(text[i]);
+            }
+            if(open) out+='</mark>';
+            return out;
+        }
+
+        function renderKbd(keys, q) {
+            return String(keys||'').split('/').map(p=>`<kbd>${highlight(p.trim(),q)}</kbd>`).join(' ');
+        }
+
+        function populateSC() {
+            const apps = ['all',...new Set(SC.map(s=>s.a))];
+            scChips.innerHTML = apps.map(a => {
+                const cls = a==='all' ? '' : (badgeMap[a]||'');
+                const label = a==='all' ? 'All apps' : a;
+                return `<button class="sc-chip ${a===scApp?'active':''}" data-app="${a}"><span class="sc-badge ${cls}">${label}</span></button>`;
+            }).join('');
+            const cats = ['all',...new Set(SC.map(s=>s.c))];
+            scCat.innerHTML = cats.map(c=>`<option value="${c}">${c==='all'?'All categories':c}</option>`).join('');
+            scChips.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{scApp=b.dataset.app;renderSC();}));
+        }
+
+        function renderSC() {
+            const q = scSearch.value||'';
+            const cat = scCat.value;
+            const filtered = SC.filter(s => {
+                return (scApp==='all'||s.a===scApp) && (cat==='all'||s.c===cat) && matchItem(q,s);
+            });
+            scRows.innerHTML = filtered.map(s => {
+                const cls = badgeMap[s.a]||'';
+                return `<tr><td><span class="sc-badge ${cls}">${highlight(s.a,q)}</span></td><td>${highlight(s.c,q)}</td><td>${highlight(s.n,q)}</td><td>${renderKbd(s.k,q)}</td></tr>`;
+            }).join('');
+            scEmpty.style.display = filtered.length ? 'none' : 'block';
+            scMeta.textContent = `Showing ${filtered.length} of ${SC.length} shortcuts`;
+            scChips.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.app===scApp));
+            scHint.textContent = !q.trim() ? 'Type a command or key combo (e.g. devtools, ctrl shift t, win left, wispr paste).' :
+                filtered.length === 0 ? 'No matches. Try fewer words or part of the key combo.' :
+                filtered.length > 15 ? 'Many matches — narrow by selecting an app or category.' : `${filtered.length} match${filtered.length===1?'':'es'} found.`;
+        }
+
+        scSearch.addEventListener('input', renderSC);
+        scCat.addEventListener('change', renderSC);
+        populateSC();
+        renderSC();
+    </script>
 </body>
 </html>

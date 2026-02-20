@@ -11,6 +11,11 @@ import {
   getProjectLastUpdatedSnapshot,
   verifyGithubWebhookSignature,
 } from "./services/project-last-updated.js";
+import {
+  verifySentryWebhookSignature,
+  processWebhookEvent,
+  getStoredEvents,
+} from "./services/sentry-triage.js";
 import { getProviderHealthSnapshot } from "./services/provider-health.js";
 import { buildProjectSystemPrompt } from "./services/project-context.js";
 
@@ -130,6 +135,45 @@ export function registerRoutes(app: Express) {
       });
     }),
   );
+
+  /* ── Sentry webhook & events ── */
+
+  app.post(
+    "/api/sentry-webhook",
+    asyncRoute(async (req, res) => {
+      const signatureHeader = req.header("sentry-hook-signature") ?? undefined;
+      const resource = (req.header("sentry-hook-resource") ?? "").toLowerCase();
+      const secret = process.env.SENTRY_WEBHOOK_SECRET;
+      const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+
+      const signatureValid = verifySentryWebhookSignature(rawBody, signatureHeader, secret);
+      if (!signatureValid) {
+        return res.status(401).json({ ok: false, error: "Invalid webhook signature" });
+      }
+
+      if (resource !== "issue") {
+        return res.status(202).json({
+          ok: true,
+          ignored: true,
+          reason: "unsupported_resource",
+          resource: resource || "unknown",
+        });
+      }
+
+      const triageTimeoutMs = Number(process.env.SENTRY_TRIAGE_TIMEOUT_MS || 15000);
+      const event = await withOverallTimeout(
+        processWebhookEvent(req.body as any),
+        triageTimeoutMs,
+        "sentry-triage",
+      );
+
+      return res.json({ ok: true, eventId: event.id, status: event.status });
+    }),
+  );
+
+  app.get("/api/sentry-events", (_req, res) => {
+    res.json({ ok: true, data: getStoredEvents() });
+  });
 
   app.post(
     "/api/ai/chat",

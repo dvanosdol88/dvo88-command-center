@@ -1,0 +1,1492 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>AI Agent Tools & Instructions Inventory</title>
+    <style>
+        :root {
+            --bg: #2d3748;
+            --bg-section: rgba(0, 0, 0, 0.2);
+            --bg-card: rgba(0, 0, 0, 0.3);
+            --bg-item: rgba(255, 255, 255, 0.05);
+            --bg-nav: rgba(0, 0, 0, 0.25);
+            --text: #e2e8f0;
+            --text-muted: #a0aec0;
+            --text-dim: #718096;
+            --text-sub: #cbd5e0;
+            --accent: #7eb8da;
+            --accent-border: rgba(126, 184, 218, 0.3);
+            --border: rgba(255, 255, 255, 0.1);
+            --code-bg: rgba(0, 0, 0, 0.3);
+            --code-text: #c9b87a;
+            --table-header: rgba(126, 184, 218, 0.15);
+            --table-stripe: rgba(255, 255, 255, 0.02);
+            --claude-color: #d4a574;
+            --gemini-color: #7aa3d4;
+            --codex-color: #7ac47a;
+            --cursor-color: #b89ac4;
+            --has-color: #7ac47a;
+            --no-color: #4a5568;
+            --partial-color: #c9a87a;
+            --connected: #6a9a6a;
+            --disconnected: #9a6a6a;
+            --disabled: #9a8a6a;
+            --native-color: #7aa3d4;
+        }
+
+        [data-theme="light"] {
+            --bg: #f0f2f5;
+            --bg-section: rgba(255, 255, 255, 0.85);
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --bg-item: rgba(0, 0, 0, 0.04);
+            --bg-nav: rgba(255, 255, 255, 0.8);
+            --text: #1a202c;
+            --text-muted: #4a5568;
+            --text-dim: #718096;
+            --text-sub: #2d3748;
+            --accent: #2b6cb0;
+            --accent-border: rgba(43, 108, 176, 0.3);
+            --border: rgba(0, 0, 0, 0.12);
+            --code-bg: rgba(0, 0, 0, 0.06);
+            --code-text: #975a16;
+            --table-header: rgba(43, 108, 176, 0.1);
+            --table-stripe: rgba(0, 0, 0, 0.02);
+            --claude-color: #b7791f;
+            --gemini-color: #2b6cb0;
+            --codex-color: #276749;
+            --cursor-color: #6b46c1;
+            --has-color: #276749;
+            --no-color: #cbd5e0;
+            --partial-color: #975a16;
+            --connected: #276749;
+            --disconnected: #c53030;
+            --disabled: #975a16;
+            --native-color: #2b6cb0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            margin: 0 auto 14px;
+            max-width: 1200px;
+            background: var(--bg-nav);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .top-nav a {
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .top-nav a:hover { text-decoration: underline; }
+
+        .top-nav .hint {
+            color: var(--text-muted);
+            font-size: 0.85em;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-item);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            background: var(--bg-nav);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            background: var(--bg-item);
+            color: var(--text);
+        }
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            background: var(--bg-section);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .section h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 1px solid var(--accent-border);
+            padding-bottom: 8px;
+        }
+
+        /* Instruction Files Section */
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .instruction-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 3px solid;
+        }
+
+        .instruction-card.d-drive { border-color: #5c9ece; }
+        .instruction-card.c-drive { border-color: #7a8a7a; }
+
+        .instruction-card h3 {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instruction-card.d-drive h3 { color: #5c9ece; }
+        .instruction-card.c-drive h3 { color: #9aaa9a; }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-item);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8em;
+        }
+
+        .file-item .path { color: var(--code-text); }
+        .file-item .agent {
+            font-size: 0.75em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--bg-item);
+        }
+
+        .file-item .agent.claude { color: var(--claude-color); }
+        .file-item .agent.gemini { color: var(--gemini-color); }
+        .file-item .agent.codex { color: var(--codex-color); }
+
+        .instruction-content {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .instruction-content h4 {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .content-preview {
+            font-size: 0.75em;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        .content-preview ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .content-preview li {
+            padding: 3px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .content-preview li::before {
+            content: "â€¢";
+            position: absolute;
+            left: 0;
+            color: var(--text-dim);
+        }
+
+        /* Agent Cards Grid - 5 columns */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-top: 3px solid;
+        }
+
+        .agent-card.claude { border-top-color: var(--claude-color); }
+        .agent-card.gemini { border-top-color: var(--gemini-color); }
+        .agent-card.codex { border-top-color: var(--codex-color); }
+        .agent-card.cursor { border-top-color: var(--cursor-color); }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .agent-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            background: var(--bg-item);
+        }
+
+        .agent-name {
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .agent-subtitle {
+            font-size: 0.7em;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .agent-card.claude .agent-name { color: var(--claude-color); }
+        .agent-card.gemini .agent-name { color: var(--gemini-color); }
+        .agent-card.codex .agent-name { color: var(--codex-color); }
+        .agent-card.cursor .agent-name { color: var(--cursor-color); }
+
+        .tool-category {
+            margin-bottom: 15px;
+        }
+
+        .tool-category h3 {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .tool-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tool-item {
+            background: var(--bg-item);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tool-item.connected { border-left: 2px solid var(--connected); }
+        .tool-item.disconnected { border-left: 2px solid var(--disconnected); opacity: 0.6; }
+        .tool-item.disabled { border-left: 2px solid var(--disabled); opacity: 0.7; }
+        .tool-item.native { border-left: 2px solid var(--native-color); }
+
+        .tool-count {
+            font-size: 0.9em;
+            color: var(--text-dim);
+        }
+
+        .config-location {
+            background: var(--code-bg);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.65em;
+        }
+
+        .config-location .path { color: var(--code-text); }
+
+        /* Quick Stats Table - 5 columns */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--table-header);
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        th.tool-name {
+            text-align: left;
+            width: 180px;
+        }
+
+        th.claude { background: rgba(212, 165, 116, 0.2); color: var(--claude-color); }
+        th.gemini { background: rgba(122, 163, 212, 0.2); color: var(--gemini-color); }
+        th.codex { background: rgba(122, 196, 122, 0.2); color: var(--codex-color); }
+        th.cursor { background: rgba(184, 154, 196, 0.2); color: var(--cursor-color); }
+
+        tr:nth-child(even) {
+            background: var(--table-stripe);
+        }
+
+        td.tool-name {
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.85em;
+        }
+
+        .has { color: var(--has-color); }
+        .no { color: var(--no-color); }
+        .partial { color: var(--partial-color); }
+
+        .category-row {
+            background: var(--table-header) !important;
+        }
+
+        .category-row td {
+            color: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            padding-left: 15px;
+            font-size: 0.85em;
+        }
+
+        /* Future Feature Note */
+        .future-note {
+            background: rgba(126, 184, 218, 0.1);
+            border: 1px dashed var(--accent-border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .future-note h4 {
+            color: var(--accent);
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        .future-note p {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .future-note code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: var(--code-text);
+        }
+
+        /* Explainer Section */
+        .explainer {
+            background: rgba(126, 184, 218, 0.08);
+            border: 1px solid rgba(126, 184, 218, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .explainer h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .explainer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .explainer-item {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .explainer-item h3 {
+            color: var(--code-text);
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .explainer-item p {
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: var(--text-sub);
+        }
+
+        .explainer-item code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: var(--has-color);
+            font-size: 0.9em;
+        }
+
+        .explainer-item .highlight {
+            color: var(--claude-color);
+            font-weight: 600;
+        }
+
+        /* Claude Family Section */
+        .claude-family {
+            background: rgba(212, 165, 116, 0.1);
+            border: 1px solid rgba(212, 165, 116, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .claude-family h2 {
+            color: var(--claude-color);
+            margin-bottom: 15px;
+        }
+
+        .family-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .family-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .family-node {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px 18px;
+            border-left: 3px solid;
+            min-width: 200px;
+        }
+
+        .family-node.api { border-color: #9a6a9a; }
+        .family-node.web { border-color: #7aa3d4; }
+        .family-node.desktop { border-color: #d4a574; }
+        .family-node.cli { border-color: #7ac47a; }
+        .family-node.extension { border-color: #c9a87a; }
+
+        .family-node h4 {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .family-node.api h4 { color: #b88ab8; }
+        .family-node.web h4 { color: #7aa3d4; }
+        .family-node.desktop h4 { color: #d4a574; }
+        .family-node.cli h4 { color: #7ac47a; }
+        .family-node.extension h4 { color: #c9a87a; }
+
+        .family-node p {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .family-arrow {
+            color: var(--text-dim);
+            font-size: 1.2em;
+        }
+
+        .family-note {
+            background: rgba(212, 165, 116, 0.15);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.8em;
+            color: var(--text-sub);
+        }
+
+        .family-note strong {
+            color: var(--claude-color);
+        }
+
+        /* Blurring Lines Section */
+        .blurring-lines {
+            background: rgba(184, 154, 196, 0.1);
+            border: 1px solid rgba(184, 154, 196, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .blurring-lines h2 {
+            color: var(--cursor-color);
+            margin-bottom: 15px;
+        }
+
+        .blurring-lines p {
+            font-size: 0.85em;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .blurring-lines .insight {
+            background: var(--bg-card);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-dim);
+            margin-top: 30px;
+            padding: 15px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-nav">
+        <a href="./all-shortcuts.html?view=shortcuts" target="_top">&larr; All Shortcuts</a>
+        <div class="hint">Tip: open <code>all-shortcuts.html?view=tools</code> to embed this page</div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="theme-icon">&#9790;</span> <span id="theme-label">Light</span>
+        </button>
+    </div>
+
+    <h1>AI Agent Tools & Instructions Inventory</h1>
+    <p class="subtitle">Unified view of MCP servers, tools, and instruction files across all agents</p>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tools')">&#128736; AI Tools</button>
+        <button class="tab-btn" onclick="switchTab('ssh')">&#128273; SSH / Termius</button>
+        <button class="tab-btn" onclick="switchTab('raycast')">&#9889; Raycast</button>
+    </div>
+
+    <!-- TAB: AI Tools -->
+    <div id="tab-tools" class="tab-panel active">
+
+    <!-- Instruction Files Section -->
+    <div class="section">
+        <h2>ðŸ“„ Instruction Files (.md)</h2>
+        <div class="instructions-grid">
+            <!-- D: Drive (Project) -->
+            <div class="instruction-card d-drive">
+                <h3>ðŸ“ D:\ (Development Drive - Project Level)</h3>
+                <div class="file-list">
+                    <div class="file-item">
+                        <span class="path">D:\CLAUDE.md</span>
+                        <span class="agent claude">Claude Desktop</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">D:\GEMINI.md</span>
+                        <span class="agent gemini">Gemini CLI</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">D:\AGENTS.md</span>
+                        <span class="agent codex">Codex CLI</span>
+                    </div>
+                </div>
+                <div class="instruction-content">
+                    <h4>Shared Content (202 lines)</h4>
+                    <div class="content-preview">
+                        <ul>
+                            <li>Core Principles (Config-Driven, Loosely Coupled, etc.)</li>
+                            <li>Safety Rules (Rule #1: Don't Break, Rule #2: Test First)</li>
+                            <li>After Making Changes Checklist (TEST â†’ CHECK â†’ COMMIT â†’ DOC)</li>
+                            <li>Browser & UI Tools (YOU HAVE THESE - USE THEM!)</li>
+                            <li>Task Completion Format (âœ… DONE, ðŸ“ STATE, âš ï¸ NOTES, ðŸ”— LINKS)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- C: Drive (User Home) -->
+            <div class="instruction-card c-drive">
+                <h3>ðŸ“ C:\Users\david\ (User Home - Global)</h3>
+                <div class="file-list">
+                    <div class="file-item">
+                        <span class="path">~/.claude/CLAUDE.md</span>
+                        <span class="agent claude">Claude Desktop</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">~/.gemini/GEMINI.md</span>
+                        <span class="agent gemini">Gemini CLI</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">~/.codex/codex.md</span>
+                        <span class="agent codex">Codex CLI</span>
+                    </div>
+                </div>
+                <div class="instruction-content">
+                    <h4>Agent-Specific Extras</h4>
+                    <div class="content-preview">
+                        <ul>
+                            <li><strong>Gemini:</strong> +Google Workspace MCP, +Firebase MCP</li>
+                            <li><strong>Claude:</strong> Standard tool list</li>
+                            <li><strong>Codex:</strong> Standard tool list</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="future-note">
+            <h4>ðŸ’¡ Future Feature: Auto-Sync for keeping .md files current</h4>
+            <p>
+                <strong>Option A (Pull):</strong> HTML fetches .md files via JavaScript <code>fetch()</code> â€” requires a local server or file:// permissions.<br>
+                <strong>Option B (Push):</strong> A script watches .md files and regenerates HTML on change â€” <code>chokidar</code> + Node.js.<br>
+                <strong>Option C (Simplest):</strong> VS Code task that runs on save to rebuild this HTML from .md files.
+            </p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="section">
+        <h2>ðŸ“Š Quick Comparison</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="tool-name">Metric</th>
+                    <th class="claude">Claude Desktop</th>
+                    <th class="gemini">Gemini CLI</th>
+                    <th class="codex">Codex CLI</th>
+                    <th class="cursor">Cursor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="tool-name"><strong>Underlying Model</strong></td>
+                    <td>Claude (Anthropic)</td>
+                    <td>Gemini (Google)</td>
+                    <td>GPT-4/o1 (OpenAI)</td>
+                    <td>Any (selectable)</td>
+                </tr>
+                <tr>
+                    <td class="tool-name"><strong>MCP Servers</strong></td>
+                    <td><strong>3+</strong></td>
+                    <td><strong>12+</strong></td>
+                    <td><strong>3</strong></td>
+                    <td><strong>8</strong></td>
+                </tr>
+                <tr>
+                    <td class="tool-name"><strong>Tools Available</strong></td>
+                    <td>~50+</td>
+                    <td><strong>~128</strong></td>
+                    <td>~50</td>
+                    <td>~60</td>
+                </tr>
+                <tr>
+                    <td class="tool-name"><strong>Instruction File</strong></td>
+                    <td>CLAUDE.md</td>
+                    <td>GEMINI.md</td>
+                    <td>AGENTS.md</td>
+                    <td>.cursorrules</td>
+                </tr>
+                <tr>
+                    <td class="tool-name"><strong>Interface</strong></td>
+                    <td>Desktop App / Chrome</td>
+                    <td>Terminal</td>
+                    <td>Terminal / chatgpt.com/codex</td>
+                    <td>IDE (VS Code fork)</td>
+                </tr>
+                <tr>
+                    <td class="tool-name"><strong>File System Access</strong></td>
+                    <td><span class="has">Full (via MCP)</span></td>
+                    <td><span class="has">Full</span></td>
+                    <td><span class="has">Full</span></td>
+                    <td><span class="has">Full</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Agent Cards -->
+    <div class="section">
+        <h2>ðŸ”§ MCP Servers by Agent</h2>
+        <div class="agents-grid">
+            <!-- Claude Desktop -->
+            <div class="agent-card claude">
+                <div class="agent-header">
+                    <div class="agent-icon">ðŸŸ </div>
+                    <div>
+                        <div class="agent-name">Claude Desktop</div>
+                        <div class="agent-subtitle">â­ This is ME!</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>MCP Servers (3+)</h3>
+                    <div class="tool-list">
+                        <div class="tool-item connected">desktop-commander <span class="tool-count">25+</span></div>
+                        <div class="tool-item connected">playwright (plugin) <span class="tool-count">30+</span></div>
+                        <div class="tool-item connected">chrome-devtools <span class="tool-count">26</span></div>
+                        <div class="tool-item connected">Claude in Chrome <span class="tool-count">15+</span></div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>Plugins</h3>
+                    <div class="tool-list">
+                        <div class="tool-item connected">vercel (plugin)</div>
+                        <div class="tool-item connected">frontend-design (plugin)</div>
+                        <div class="tool-item connected">feature-dev (plugin)</div>
+                        <div class="tool-item connected">github (plugin)</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>Native Tools</h3>
+                    <div class="tool-list">
+                        <div class="tool-item native">Read, Write, Edit, Glob, Grep</div>
+                        <div class="tool-item native">Bash, Task, WebSearch, WebFetch</div>
+                        <div class="tool-item native">TodoWrite, NotebookEdit</div>
+                    </div>
+                </div>
+
+                <div class="config-location">
+                    <span class="path">~/.claude/settings.json</span><br>
+                    <span class="path">~/.claude/plugins/</span>
+                </div>
+            </div>
+
+            <!-- Gemini CLI -->
+            <div class="agent-card gemini">
+                <div class="agent-header">
+                    <div class="agent-icon">ðŸ”µ</div>
+                    <div>
+                        <div class="agent-name">Gemini CLI</div>
+                        <div class="agent-subtitle">Google AI</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>MCP Servers (12+)</h3>
+                    <div class="tool-list">
+                        <div class="tool-item connected">chrome-devtools <span class="tool-count">26</span></div>
+                        <div class="tool-item connected">google-workspace <span class="tool-count">51</span></div>
+                        <div class="tool-item connected">firebase <span class="tool-count">14</span></div>
+                        <div class="tool-item connected">vercel <span class="tool-count">11</span></div>
+                        <div class="tool-item connected">observability <span class="tool-count">13</span></div>
+                        <div class="tool-item disabled">playwright (config)</div>
+                    </div>
+                </div>
+
+                <div class="config-location">
+                    <span class="path">~/.gemini/extensions/</span><br>
+                    <span class="path">~/.gemini/antigravity/mcp_config.json</span>
+                </div>
+            </div>
+
+            <!-- Codex CLI -->
+            <div class="agent-card codex">
+                <div class="agent-header">
+                    <div class="agent-icon">ðŸŸ¢</div>
+                    <div>
+                        <div class="agent-name">Codex CLI</div>
+                        <div class="agent-subtitle">OpenAI</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>MCP Servers (3)</h3>
+                    <div class="tool-list">
+                        <div class="tool-item connected">chrome-devtools (config)</div>
+                        <div class="tool-item connected">playwright (config)</div>
+                        <div class="tool-item connected">vercel (config)</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>Skills</h3>
+                    <div class="tool-list">
+                        <div class="tool-item connected">gh-fix-ci</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>Also Available</h3>
+                    <div class="tool-list">
+                        <div class="tool-item native">Codex Web (chatgpt.com/codex)</div>
+                    </div>
+                </div>
+
+                <div class="config-location">
+                    <span class="path">~/.codex/config.toml</span>
+                </div>
+            </div>
+
+            <!-- Cursor -->
+            <div class="agent-card cursor">
+                <div class="agent-header">
+                    <div class="agent-icon">ðŸŸ£</div>
+                    <div>
+                        <div class="agent-name">Cursor</div>
+                        <div class="agent-subtitle">Multi-model wrapper</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>MCP Servers (8)</h3>
+                    <div class="tool-list">
+                        <div class="tool-item connected">playwright (config)</div>
+                        <div class="tool-item connected">vercel (config)</div>
+                        <div class="tool-item connected">desktop-commander</div>
+                        <div class="tool-item connected">chrome-devtools</div>
+                        <div class="tool-item connected">Plaid / PayPal / Stripe</div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>Supported Models</h3>
+                    <div class="tool-list">
+                        <div class="tool-item native">Claude Sonnet/Opus</div>
+                        <div class="tool-item native">GPT-5/5.1/5.2</div>
+                        <div class="tool-item native">Gemini 3 Pro/Flash</div>
+                        <div class="tool-item native">Composer (own model)</div>
+                    </div>
+                </div>
+
+                <div class="config-location">
+                    <span class="path">~/.cursor/mcp.json</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Matrix -->
+    <div class="section">
+        <h2>ðŸ“‹ Tool Availability Matrix</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="tool-name">Tool / Server</th>
+                    <th class="claude">Claude Desktop</th>
+                    <th class="gemini">Gemini</th>
+                    <th class="codex">Codex</th>
+                    <th class="cursor">Cursor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="category-row">
+                    <td colspan="5">BROWSER / TESTING</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Playwright</td>
+                    <td><span class="has">âœ“ plugin (30+ tools)</span></td>
+                    <td><span class="partial">config</span></td>
+                    <td><span class="has">âœ“ config</span></td>
+                    <td><span class="has">âœ“ config</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Chrome DevTools</td>
+                    <td><span class="has">âœ“ 26 tools</span></td>
+                    <td><span class="has">âœ“ 26</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Claude in Chrome</td>
+                    <td><span class="has">âœ“ 15+ tools</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                </tr>
+
+                <tr class="category-row">
+                    <td colspan="5">FILE SYSTEM</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Desktop Commander</td>
+                    <td><span class="has">âœ“ 25+ tools</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="has">âœ“</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Read/Write/Edit/Glob/Grep</td>
+                    <td><span class="has">âœ“ Native</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                </tr>
+
+                <tr class="category-row">
+                    <td colspan="5">DEPLOYMENT</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Vercel</td>
+                    <td><span class="has">âœ“ plugin + skills</span></td>
+                    <td><span class="has">âœ“ 11</span></td>
+                    <td><span class="has">âœ“ config</span></td>
+                    <td><span class="has">âœ“ config</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Firebase</td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="has">âœ“ 14</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                </tr>
+
+                <tr class="category-row">
+                    <td colspan="5">WEB & SEARCH</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">WebSearch</td>
+                    <td><span class="has">âœ“ Native</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">WebFetch</td>
+                    <td><span class="has">âœ“ Native</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                </tr>
+
+                <tr class="category-row">
+                    <td colspan="5">GOOGLE WORKSPACE (Gemini Only)</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Gmail, Calendar, Docs, Drive</td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="has">âœ“ 51 tools</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                </tr>
+
+                <tr class="category-row">
+                    <td colspan="5">PAYMENTS (Cursor Only)</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Plaid / PayPal / Stripe</td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="no">â€”</span></td>
+                    <td><span class="has">âœ“</span></td>
+                </tr>
+
+                <tr class="category-row">
+                    <td colspan="5">AGENTIC FEATURES</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Plugin System</td>
+                    <td><span class="has">âœ“ Full (skills, hooks)</span></td>
+                    <td><span class="partial">Extensions</span></td>
+                    <td><span class="partial">Skills</span></td>
+                    <td><span class="no">â€”</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Task/Agent Spawning</td>
+                    <td><span class="has">âœ“ Native</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“</span></td>
+                    <td><span class="has">âœ“ Agent Mode</span></td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Todo Tracking</td>
+                    <td><span class="has">âœ“ TodoWrite</span></td>
+                    <td><span class="partial">Manual</span></td>
+                    <td><span class="partial">Manual</span></td>
+                    <td><span class="partial">Manual</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Key Concepts Explainer -->
+    <div class="explainer">
+        <h2>ðŸ”‘ Key Concepts Explained</h2>
+        <div class="explainer-grid">
+            <div class="explainer-item">
+                <h3>1. What is "Cursor Agent"?</h3>
+                <p>
+                    <span class="highlight">Cursor Agent is NOT its own AI model</span> â€” it's an orchestration layer that wraps
+                    frontier models (Claude, GPT, Gemini, etc.). Cursor built <code>Composer</code>, their own fast coding model,
+                    but also supports all major providers. When you use "Agent mode" in Cursor, it autonomously explores your
+                    codebase, edits files, and runs commands â€” powered by whichever model you select.
+                    <br><br>
+                    <strong>TL;DR:</strong> Cursor = orchestration + UI + tools. The AI brain comes from Claude/GPT/Gemini.
+                    <br><br>
+                    <strong>Billing:</strong> Cursor has its own subscription ($20/mo Pro) with usage limits. API calls flow through Cursor's account, not yours directly.
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>2. Config Files: One or Many?</h3>
+                <p>
+                    <span class="highlight">Each agent has MULTIPLE config files</span> for different purposes:
+                    <br><br>
+                    <strong>Claude Desktop:</strong><br>
+                    â€¢ <code>settings.json</code> â€” MCP servers, permissions<br>
+                    â€¢ <code>CLAUDE.md</code> â€” instructions/rules<br>
+                    â€¢ <code>plugins/*/plugin.json</code> â€” per-plugin config<br>
+                    <br>
+                    <strong>Gemini CLI:</strong><br>
+                    â€¢ <code>extensions/</code> â€” built-in extensions<br>
+                    â€¢ <code>antigravity/mcp_config.json</code> â€” custom MCP servers<br>
+                    â€¢ <code>GEMINI.md</code> â€” instructions<br>
+                    <br>
+                    <strong>Codex CLI:</strong> <code>config.toml</code> + <code>mcp_servers.json</code> + <code>AGENTS.md</code><br>
+                    <strong>Cursor:</strong> <code>mcp.json</code> + <code>.cursorrules</code>
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>3. What's the difference between (config) and (plugin)?</h3>
+                <p>
+                    <code>(config)</code> = MCP server defined in a JSON config file (mcp_config.json, mcp.json).
+                    You manually specify the command and args. Can be enabled/disabled.
+                    <br><br>
+                    <code>(plugin)</code> = A higher-level package with metadata, skills, and hooks. Plugins have
+                    a <code>plugin.json</code> describing the tool, plus optional <code>.mcp.json</code> for the server.
+                    Plugins can include multiple capabilities beyond just an MCP server.
+                    <br><br>
+                    <strong>Example:</strong> Vercel in Claude Desktop is a plugin (has /deploy skill).
+                    Playwright in Gemini's mcp_config.json is a config.
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>4. How hard is "VS Code auto-sync"?</h3>
+                <p>
+                    <strong>Difficulty: Easy-Medium</strong> (30-60 min setup)
+                    <br><br>
+                    <strong>Option A:</strong> VS Code Task on save â€” when you save a .md file, run a Node script that
+                    regenerates this HTML. Uses <code>tasks.json</code> + a simple script.
+                    <br><br>
+                    <strong>Option B:</strong> File watcher with <code>chokidar</code> â€” runs in background, auto-rebuilds on change.
+                    <br><br>
+                    <strong>Option C:</strong> Pre-commit hook â€” rebuilds HTML before any git commit.
+                    <br><br>
+                    All are doable in an afternoon. Option A is simplest.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claude Product Family -->
+    <div class="claude-family">
+        <h2>ðŸŸ  The Claude Product Family</h2>
+        <div class="family-diagram">
+            <div class="family-row">
+                <div class="family-node api">
+                    <h4>Claude API</h4>
+                    <p>The raw API from Anthropic. Powers everything else. Direct access via HTTP/SDK.</p>
+                </div>
+                <span class="family-arrow">â†’</span>
+                <div class="family-node web">
+                    <h4>Claude.ai (Web)</h4>
+                    <p>Browser chat at claude.ai. Can access files via MCP integrations, Projects, and Connectors now!</p>
+                </div>
+            </div>
+            <div class="family-row">
+                <div class="family-node api" style="visibility: hidden;"></div>
+                <span class="family-arrow">â†’</span>
+                <div class="family-node desktop">
+                    <h4>Claude Desktop â­</h4>
+                    <p><strong>This is ME!</strong> Native app with full MCP support, Desktop Commander for file access,
+                    plugins, and agentic capabilities.</p>
+                </div>
+            </div>
+            <div class="family-row">
+                <div class="family-node api" style="visibility: hidden;"></div>
+                <span class="family-arrow">â†’</span>
+                <div class="family-node cli">
+                    <h4>Claude Code CLI</h4>
+                    <p>Terminal-based agent. Same capabilities as Desktop, different interface. Shares ~/.claude/ config.</p>
+                </div>
+            </div>
+            <div class="family-row">
+                <div class="family-node api" style="visibility: hidden;"></div>
+                <span class="family-arrow">â†’</span>
+                <div class="family-node extension">
+                    <h4>Claude Code Extension</h4>
+                    <p>VS Code/JetBrains extension. Same brain, embedded in your IDE. Shares settings with CLI/Desktop.</p>
+                </div>
+            </div>
+        </div>
+        <div class="family-note">
+            <strong>Key insight:</strong> Claude Desktop and Claude Code CLI share the same <code>~/.claude/</code> config directory.
+            Plugins installed in one appear in the other. The Chrome extension adds browser automation on top.
+        </div>
+    </div>
+
+    <!-- The Blurring Lines -->
+    <div class="blurring-lines">
+        <h2>ðŸŒŠ The Lines Are Quickly Blurring</h2>
+        <p>
+            You're absolutely right. The distinctions between these products are dissolving rapidly:
+        </p>
+        <p>
+            <strong>â€¢ Claude.ai (Web)</strong> â€” Originally "no file access," but now has MCP integrations, Projects feature,
+            and Connectors (Google Drive, Notion, etc.). It's gaining desktop-like capabilities.
+        </p>
+        <p>
+            <strong>â€¢ Claude Desktop vs CLI</strong> â€” Share the same config, same plugins, same MCP servers.
+            The only difference is GUI vs terminal interface.
+        </p>
+        <p>
+            <strong>â€¢ Cursor</strong> â€” Wraps Claude/GPT/Gemini but adds its own orchestration layer.
+            Is it a separate agent or just a fancy IDE?
+        </p>
+        <p>
+            <strong>â€¢ Codex Web vs CLI</strong> â€” Same OpenAI models, same capabilities, different interfaces.
+        </p>
+        <div class="insight">
+            <strong>The emerging pattern:</strong> Every AI provider is racing to add file access, browser control,
+            and agentic capabilities. The "agent" is increasingly just the model + whatever tools you give it.
+            The interface (web, desktop, terminal, IDE) is becoming secondary to the MCP servers and plugins you configure.
+        </div>
+    </div>
+
+
+    </div><!-- END TAB: AI Tools -->
+
+    <!-- TAB: SSH / Termius -->
+    <div id="tab-ssh" class="tab-panel">
+
+    <div class="section" style="border-left: 3px solid #4dc9f6;">
+        <h2>&#128640; Top Things You Can Do with Termius + SSH</h2>
+        <div class="explainer-grid">
+            <div class="explainer-item">
+                <h3>1. Remote Terminal Access</h3>
+                <p>SSH into any machine from your phone, tablet, or desktop. Run commands, manage services, deploy code from Termius with synced credentials across devices.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>2. Cross-Device Vault Sync</h3>
+                <p>Your hosts, SSH keys, and snippets sync through Termius Vault. Set up a connection once on your phone, and it is available on your desktop (and vice versa).</p>
+            </div>
+            <div class="explainer-item">
+                <h3>3. Port Forwarding / SSH Tunnels</h3>
+                <p>Access services running on remote machines through SSH tunnels. Forward a dev server on <code>:3000</code> or a database on <code>:5432</code> to your local machine securely.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>4. SFTP File Transfers</h3>
+                <p>Built-in file transfer between your device and any remote host. Move files between your phone, Windows box, and Linux machine without extra tools.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>5. Snippets Library</h3>
+                <p>Save frequently used commands (restart services, check logs, deploy scripts) and sync them across all your devices. One tap to paste complex commands.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>6. Multi-Host Terminal Tabs</h3>
+                <p>Multiple SSH sessions open simultaneously in tabs. Jump between your Windows box and Linux ThinkBox without reconnecting.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>7. Keychain Management</h3>
+                <p>Manage all your SSH keys in one place. Assign keys to specific hosts, generate new keypairs, and keep everything organized across connections.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>8. SSH Gateway / Jump Hosts</h3>
+                <p>Chain connections through a bastion/jump host. Access machines behind firewalls by routing through an intermediate SSH server.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" style="border-left: 3px solid #4dc9f6;">
+        <h2>&#128273; Network Hosts &amp; SSH Reference</h2>
+        <div class="explainer-grid">
+            <div class="explainer-item">
+                <h3>Network Hosts</h3>
+                <p>
+                    <strong style="color: #4dc9f6;">DVO-HP (Windows)</strong><br>
+                    IP: <code>192.168.4.45</code> | Port: <code>22</code><br>
+                    OS: Windows 10 (Build 26200) | SSH: OpenSSH_for_Windows_9.5<br>
+                    User: <code>david</code> (Administrators group)<br>
+                    Auth: SSH key (publickey)<br><br>
+                    <strong style="color: #7ac47a;">ThinkBox (Ubuntu)</strong><br>
+                    IP: <code>TBD</code> | Port: <code>22</code> | OS: Ubuntu<br>
+                    Auth: SSH key (to be configured)<br>
+                    Status: <span class="partial">Pending setup</span>
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>Windows OpenSSH Gotchas</h3>
+                <p>
+                    <span class="highlight">1. No file extensions!</span><br>
+                    Must be <code>authorized_keys</code> not <code>.txt</code><br><br>
+                    <span class="highlight">2. Admin users use different key location</span><br>
+                    Standard: <code>~\.ssh\authorized_keys</code><br>
+                    Admin: <code>C:\ProgramData\ssh\administrators_authorized_keys</code><br><br>
+                    <span class="highlight">3. Permissions must be locked down</span><br>
+                    <code>icacls ... /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F"</code><br><br>
+                    <span class="highlight">4. Config:</span> <code>C:\ProgramData\ssh\sshd_config</code>
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>Ubuntu SSH Setup (ThinkBox)</h3>
+                <p>
+                    <strong>Install:</strong> <code>sudo apt install openssh-server</code><br>
+                    <strong>Enable:</strong> <code>sudo systemctl enable ssh &amp;&amp; sudo systemctl start ssh</code><br>
+                    <strong>Get IP:</strong> <code>hostname -I</code><br><br>
+                    <strong>Key auth:</strong><br>
+                    <code>chmod 700 ~/.ssh</code><br>
+                    <code>chmod 600 ~/.ssh/authorized_keys</code><br><br>
+                    <em style="color: var(--text-muted);">Linux is simpler. No admin user quirks.</em>
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>Termius App Features</h3>
+                <p>
+                    <strong>Vault:</strong> Encrypted sync across all devices<br>
+                    <strong>Keychain:</strong> Centralized SSH key management<br>
+                    <strong>Port Forwarding:</strong> Local, remote, dynamic tunnels<br>
+                    <strong>SFTP:</strong> Built-in file browser and transfer<br>
+                    <strong>Snippets:</strong> Saved commands, synced everywhere<br>
+                    <strong>Groups:</strong> Organize hosts by project/location<br>
+                    <strong>Tags:</strong> Label and filter connections<br>
+                    <strong>Terminal Tabs:</strong> Multi-session management
+                </p>
+            </div>
+        </div>
+        <div class="future-note">
+            <h4>TODO: ThinkBox Setup</h4>
+            <p>1. Install openssh-server | 2. Static IP via router | 3. Export key from Termius | 4. Add host in Termius | 5. Test connection</p>
+        </div>
+    </div>
+
+    </div><!-- END TAB: SSH -->
+
+    <!-- TAB: Raycast -->
+    <div id="tab-raycast" class="tab-panel">
+
+    <div class="section" style="border-left: 3px solid #ff6363;">
+        <h2>&#9889; Top Things You Can Do with Raycast</h2>
+        <div class="explainer-grid">
+            <div class="explainer-item">
+                <h3>1. Lightning App Launcher</h3>
+                <p>Hit <code>Alt + Space</code> and start typing. Launch any app, file, or command in milliseconds. Replaces Windows search entirely with something that actually works.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>2. Clipboard History</h3>
+                <p>Full history of everything you copy: text, images, links. Searchable and filterable. Assign a hotkey like <code>Win+V</code> for instant access. Way better than Windows default.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>3. Quick AI (Free in Beta)</h3>
+                <p>Ask questions directly from the launcher. Get answers with citations, powered by GPT-5 mini. No separate app needed. AI is just always there when you need it.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>4. Snippets / Text Expansion</h3>
+                <p>Type <code>@adr</code> and it expands to your full mailing address. Create shortcuts for emails, code templates, signatures: anything you type repeatedly.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>5. Window Management</h3>
+                <p>Keyboard shortcuts to snap, resize, and arrange windows. Half-screen, thirds, quarters: all without touching a mouse. Replaces PowerToys FancyZones.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>6. File Search</h3>
+                <p>Raycast built its own file index from scratch because the Windows built-in one was not good enough. Find any file on your system near-instantly from the launcher.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>7. Quicklinks</h3>
+                <p>Bookmark URLs, folders, or files and pin them to the main menu. Custom keyboard shortcuts to open your most-used resources in one keystroke.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>8. Extensions Ecosystem</h3>
+                <p>Hundreds of community extensions: GitHub, Slack, Notion, Jira, Spotify, and more. Built with React/TypeScript. Many macOS extensions work on Windows out of the box.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>9. Calculator</h3>
+                <p>Type math directly in the launcher. Handles natural language queries, unit conversions, and currency. Hit Enter to copy the result to clipboard instantly.</p>
+            </div>
+            <div class="explainer-item">
+                <h3>10. System Commands</h3>
+                <p>Lock screen, empty trash, toggle dark mode, eject drives, manage processes: all from the Raycast command bar without digging through settings.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" style="border-left: 3px solid #ff6363;">
+        <h2>&#128203; Raycast Quick Reference</h2>
+        <div class="explainer-grid">
+            <div class="explainer-item">
+                <h3>Setup &amp; Config</h3>
+                <p>
+                    <strong>Install:</strong> Microsoft Store or <code>winget install raycast</code><br>
+                    <strong>Global Hotkey:</strong> <code>Alt + Space</code> (customizable)<br>
+                    <strong>Status:</strong> Windows Public Beta (free)<br>
+                    <strong>OS Support:</strong> Windows 10 21H2+ / Windows 11<br>
+                    <strong>Data:</strong> Local storage (Cloud Sync coming soon)<br><br>
+                    <strong>Pro features coming to Windows:</strong><br>
+                    AI Chat, Cloud Sync, Raycast Notes, Calendar
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>Key Shortcuts</h3>
+                <p>
+                    <code>Alt + Space</code> Open Raycast<br>
+                    <code>Tab</code> Quick AI (type question, hit Tab)<br>
+                    <code>Esc</code> Close / go back<br>
+                    <code>Enter</code> Execute selected action<br>
+                    <code>Ctrl + K</code> Show actions for selected item<br><br>
+                    <strong>Custom Hotkeys:</strong> Assign any command a global keyboard shortcut via Settings
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>vs PowerToys</h3>
+                <p>
+                    PowerToys offers individual utilities, but Raycast provides a <strong>unified interface</strong> with AI integration and an extensions ecosystem.<br><br>
+                    <strong>Raycast wins:</strong> Speed, unified launcher, AI, extensions, clipboard, snippets<br>
+                    <strong>PowerToys wins:</strong> Color picker, image resizer, registry preview, mouse utilities<br><br>
+                    <em>They complement each other. No need to choose one exclusively.</em>
+                </p>
+            </div>
+            <div class="explainer-item">
+                <h3>Developer Extensions</h3>
+                <p>
+                    <strong>Build your own:</strong> React + TypeScript API<br>
+                    <strong>Cross-platform:</strong> Most extensions work on Mac and Windows<br>
+                    <strong>Popular:</strong> GitHub, Slack, Notion, Jira, Linear, Spotify, Docker<br><br>
+                    <strong>Extension Store:</strong> Browse and install from Raycast<br>
+                    <strong>Docs:</strong> <code>developers.raycast.com</code>
+                </p>
+            </div>
+        </div>
+        <div class="future-note">
+            <h4>&#128640; Coming Soon to Raycast Windows</h4>
+            <p>AI Chat (full conversations) | Cloud Sync (settings across devices) | Raycast Notes | Calendar integration | Snippet auto-expansion | More extensions</p>
+        </div>
+    </div>
+
+    </div><!-- END TAB: Raycast -->
+
+    <footer>
+        Last updated: February 14, 2026 | All instruction files synced with unified rules<br>
+        <em>Generated by Claude with Desktop Commander</em>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.target.closest('.tab-btn').classList.add('active');
+        }
+
+        function toggleTheme() {
+            var html = document.documentElement;
+            var current = html.getAttribute('data-theme');
+            var next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            document.getElementById('theme-icon').innerHTML = next === 'light' ? '&#9728;' : '&#9790;';
+            document.getElementById('theme-label').textContent = next === 'light' ? 'Dark' : 'Light';
+            try { localStorage.setItem('theme', next); } catch(e) {}
+        }
+
+        // Restore saved theme
+        try {
+            var saved = localStorage.getItem('theme');
+            if (saved) {
+                document.documentElement.setAttribute('data-theme', saved);
+                if (saved === 'light') {
+                    document.getElementById('theme-icon').innerHTML = '&#9728;';
+                    document.getElementById('theme-label').textContent = 'Dark';
+                }
+            }
+        } catch(e) {}
+    </script>
+</body>
+</html>

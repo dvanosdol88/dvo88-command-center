@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { PROJECTS, type ProjectConfig } from "../src/config/projects";
+import { useProjectLastUpdated } from "../src/hooks/useProjectLastUpdated";
 import {
   LayoutGrid,
   Activity,
   Map,
   Settings,
   ChevronRight,
+  ShieldAlert,
 } from "lucide-react";
 
 interface CommandCenterLayoutProps {
@@ -20,12 +22,33 @@ const statusDotClass: Record<string, string> = {
   red: "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]",
 };
 
-/** Build a cross-project activity feed sorted newest-first */
-function buildActivityFeed(projects: ProjectConfig[]) {
+/** Build a cross-project activity feed sorted newest-first.
+ *  Merges static recentChanges with dynamic lastUpdated overrides so that
+ *  real-time GitHub push activity appears even without manual config edits. */
+function buildActivityFeed(
+  projects: ProjectConfig[],
+  overrides: Record<string, string>,
+) {
   const items: { date: string; project: string; summary: string; status: string }[] = [];
   for (const p of projects) {
+    // Static entries from config
     for (const c of p.recentChanges) {
       items.push({ date: c.date, project: p.name, summary: c.summary, status: p.status });
+    }
+
+    // Dynamic entry from live lastUpdated override
+    const overrideTs = overrides[p.slug];
+    if (overrideTs) {
+      const overrideDate = overrideTs.slice(0, 10); // "YYYY-MM-DD"
+      const latestStaticDate = p.recentChanges[0]?.date ?? "";
+      if (overrideDate > latestStaticDate) {
+        items.push({
+          date: overrideDate,
+          project: p.name,
+          summary: "Latest commit activity",
+          status: p.status,
+        });
+      }
     }
   }
   items.sort((a, b) => b.date.localeCompare(a.date));
@@ -53,6 +76,7 @@ const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutGrid, path: "/" },
   { label: "Activity Log", icon: Activity, path: "/activity" },
   { label: "Roadmap", icon: Map, path: "/roadmap" },
+  { label: "Error Triage", icon: ShieldAlert, path: "/error-triage" },
   { label: "Settings", icon: Settings, path: "/settings" },
 ];
 
@@ -169,7 +193,8 @@ const DollarCanvas: React.FC = () => {
 const CommandCenterLayout: React.FC<CommandCenterLayoutProps> = ({ children }) => {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem("isAuthenticated") === "true");
   const location = useLocation();
-  const activity = buildActivityFeed(PROJECTS);
+  const { lastUpdatedBySlug } = useProjectLastUpdated(PROJECTS);
+  const activity = buildActivityFeed(PROJECTS, lastUpdatedBySlug);
 
   const counts = { green: 0, yellow: 0, red: 0 };
   PROJECTS.forEach((p) => counts[p.status]++);

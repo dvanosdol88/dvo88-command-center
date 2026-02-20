@@ -6,6 +6,7 @@ import ProjectDetailView from './components/ProjectDetailView';
 import CapacityCalculator from './components/miniapps/CapacityCalculator';
 import CommandCenterLayout from './components/CommandCenterLayout';
 import CommandCenter from './components/CommandCenter';
+import ErrorTriagePanel from './components/ErrorTriagePanel';
 
 // Lazy load DashboardApp to prevent top-level crashes
 const DashboardApp = React.lazy(() => import('./DashboardApp'));
@@ -38,6 +39,16 @@ const App: React.FC = () => {
           element={
             <CommandCenterLayout>
               <ProjectDetailView />
+            </CommandCenterLayout>
+          }
+        />
+
+        {/* Error triage — inside Command Center shell */}
+        <Route
+          path="/error-triage"
+          element={
+            <CommandCenterLayout>
+              <ErrorTriagePanel />
             </CommandCenterLayout>
           }
         />
