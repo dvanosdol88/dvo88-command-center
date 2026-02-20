@@ -89,7 +89,6 @@ export function createChatIdempotencyKey(): string {
 
 export async function confirmProjectChatAction(opts: {
   proposalId: string;
-  proposal?: ProjectChatActionProposal;
   decision: "confirm" | "reject";
   sessionId: string;
   expectedAction?: ProjectChatActionName;
@@ -100,7 +99,6 @@ export async function confirmProjectChatAction(opts: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       proposalId: opts.proposalId,
-      proposal: opts.proposal,
       decision: opts.decision,
       sessionId: opts.sessionId,
       expectedAction: opts.expectedAction,
