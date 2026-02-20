@@ -25,6 +25,34 @@
       }
     },
     {
+      "src": "/ai-tools\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/tools"
+      }
+    },
+    {
+      "src": "/tools\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/tools"
+      }
+    },
+    {
+      "src": "/dvo-ai-dev-tools\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/tools"
+      }
+    },
+    {
+      "src": "/dvo-ai-dev-tools-v2\\.html",
+      "status": 308,
+      "headers": {
+        "Location": "/tools"
+      }
+    },
+    {
       "src": "/tools",
       "dest": "/tools.html"
     },
