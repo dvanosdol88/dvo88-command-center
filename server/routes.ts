@@ -20,6 +20,7 @@ import {
   getProjectLastUpdatedSnapshot,
   verifyGithubWebhookSignature,
 } from "./services/project-last-updated.js";
+import { getProviderHealthSnapshot } from "./services/provider-health.js";
 import { buildProjectSystemPrompt } from "./services/project-context.js";
 
 const require = createRequire(import.meta.url);
@@ -145,20 +146,25 @@ const actionConfirmSchema = z.object({
 });
 
 export function registerRoutes(app: Express) {
-  app.get("/api/health", (_req, res) => {
+  app.get("/api/health", asyncRoute(async (req, res) => {
+    const refreshFlag = String(req.query.refresh ?? "").toLowerCase();
+    const forceRefresh = refreshFlag === "1" || refreshFlag === "true" || refreshFlag === "yes";
+    const aiProviders = await getProviderHealthSnapshot({ forceRefresh });
+
     res.json({
       status: "ok",
       appId: AI_APP_ID,
       aiCoreVersion: getAiCoreVersion(),
       vercel: !!process.env.VERCEL,
       timestamp: new Date().toISOString(),
+      aiProviders,
       providersConfigured: {
-        gemini: !!process.env.GEMINI_API_KEY,
-        openai: !!process.env.OPENAI_API_KEY,
-        anthropic: !!process.env.ANTHROPIC_API_KEY,
+        gemini: aiProviders.providers.gemini.configured,
+        openai: aiProviders.providers.openai.configured,
+        anthropic: aiProviders.providers.anthropic.configured,
       },
     });
-  });
+  }));
 
   app.get("/api/projects/last-updated", (_req, res) => {
     res.json({

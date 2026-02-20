@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProjectBySlug, ProjectStatus } from "../src/config/projects";
 import ProjectChatDrawer from "./ProjectChatDrawer";
@@ -28,6 +28,45 @@ const formatDate = (d: string, withYear = true) => {
   return parsed.toLocaleDateString("en-US", opts);
 };
 
+const AI_PROVIDER_ORDER = ["openai", "anthropic", "gemini"] as const;
+type AiProviderName = (typeof AI_PROVIDER_ORDER)[number];
+
+interface AiProviderHealthEntry {
+  provider: AiProviderName;
+  displayName: string;
+  configured: boolean;
+  isLive: boolean;
+  status: "green" | "red";
+  reason: string;
+  model: string;
+  latencyMs: number | null;
+  checkedAt: string;
+}
+
+interface AiProviderHealthPayload {
+  status: "green" | "red";
+  checkedAt: string;
+  cacheTtlMs: number;
+  providers: Record<AiProviderName, AiProviderHealthEntry>;
+}
+
+interface HealthApiResponse {
+  aiProviders?: AiProviderHealthPayload;
+}
+
+function formatDateTime(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
 /* Card wrapper for consistent styling */
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = "" }) => (
   <section className={`bg-[#131a2b]/80 border border-slate-700/50 rounded-xl p-6 ${className}`}>
@@ -42,6 +81,60 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const ProjectDetailView: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const project = slug ? getProjectBySlug(slug) : undefined;
+  const isAiCoreProject = project?.slug === "ai-core";
+  const [providerHealth, setProviderHealth] = useState<AiProviderHealthPayload | null>(null);
+  const [providerHealthError, setProviderHealthError] = useState<string | null>(null);
+  const [loadingProviderHealth, setLoadingProviderHealth] = useState(false);
+
+  useEffect(() => {
+    if (!isAiCoreProject) {
+      setProviderHealth(null);
+      setProviderHealthError(null);
+      setLoadingProviderHealth(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadProviderHealth = async () => {
+      setLoadingProviderHealth(true);
+      try {
+        const response = await fetch("/api/health", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        if (!response.ok) {
+          throw new Error(`Health endpoint returned HTTP ${response.status}`);
+        }
+
+        const payload = (await response.json()) as HealthApiResponse;
+        if (!payload.aiProviders?.providers) {
+          throw new Error("Health payload missing provider diagnostics");
+        }
+
+        if (!cancelled) {
+          setProviderHealth(payload.aiProviders);
+          setProviderHealthError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setProviderHealthError(error instanceof Error ? error.message : "Unknown provider health error");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingProviderHealth(false);
+        }
+      }
+    };
+
+    loadProviderHealth();
+    const intervalId = window.setInterval(loadProviderHealth, 60000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [isAiCoreProject]);
 
   if (!project) {
     return (
@@ -91,6 +184,69 @@ const ProjectDetailView: React.FC = () => {
         </div>
         <p className="text-sm text-slate-400 leading-relaxed">{project.description}</p>
       </Card>
+
+      {isAiCoreProject && (
+        <Card className="mb-6">
+          <SectionTitle>AI Provider Health</SectionTitle>
+          <p className="text-xs text-slate-500 mb-4">
+            Live diagnostics from <code>/api/health</code>. Auto-refreshes every 60 seconds.
+          </p>
+
+          {providerHealthError && (
+            <div className="mb-4 rounded-xl border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200">
+              Unable to load provider health: {providerHealthError}
+            </div>
+          )}
+
+          {loadingProviderHealth && !providerHealth ? (
+            <p className="text-sm text-slate-400">Running provider connectivity probes...</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {AI_PROVIDER_ORDER.map((providerName) => {
+                const provider = providerHealth?.providers?.[providerName];
+                const isGreen = provider?.status === "green";
+                const lightLabel = isGreen ? "GREEN LIGHT" : "RED LIGHT";
+                const reason = provider?.reason ?? "No provider health data available yet";
+
+                return (
+                  <div
+                    key={providerName}
+                    className={`rounded-xl border p-4 ${
+                      isGreen ? "border-emerald-500/50 bg-emerald-500/10" : "border-red-500/50 bg-red-500/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex h-14 w-14 shrink-0 rounded-full ${
+                          isGreen
+                            ? "bg-emerald-500 shadow-[0_0_26px_rgba(16,185,129,0.85)]"
+                            : "bg-red-500 shadow-[0_0_26px_rgba(239,68,68,0.85)]"
+                        }`}
+                      />
+                      <div>
+                        <p className={`text-lg font-extrabold tracking-wide ${isGreen ? "text-emerald-200" : "text-red-200"}`}>
+                          {lightLabel}
+                        </p>
+                        <p className="text-sm font-semibold text-white">{provider?.displayName ?? providerName}</p>
+                      </div>
+                    </div>
+
+                    <p className={`mt-3 text-sm ${isGreen ? "text-emerald-100" : "text-red-100"}`}>{reason}</p>
+                    <p className="mt-2 text-xs text-slate-300">Model: {provider?.model ?? "n/a"}</p>
+                    {typeof provider?.latencyMs === "number" && (
+                      <p className="text-xs text-slate-300">Latency: {provider.latencyMs}ms</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {providerHealth && (
+            <p className="mt-4 text-xs text-slate-500">Last checked: {formatDateTime(providerHealth.checkedAt)}</p>
+          )}
+        </Card>
+      )}
 
       {/* Tech Stack */}
       <Card className="mb-6">
