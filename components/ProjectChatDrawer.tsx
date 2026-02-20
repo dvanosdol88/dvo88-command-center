@@ -1,44 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Bot, MessageSquare, Send, User, X } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { PROJECT_CHAT_ACTIONS, type ProjectChatActionProposal } from "../src/config/projectChat";
-import { collectProjectChatPageContext } from "../services/projectChatContext";
-import {
-  confirmProjectChatAction,
-  createChatIdempotencyKey,
-  getProjectChatResponse,
-  type ProjectChatMessage,
-} from "../services/projectChatService";
+import { getProjectChatResponse, type ProjectChatMessage } from "../services/projectChatService";
 
 const INITIAL_MESSAGE: ProjectChatMessage = {
   role: "assistant",
   text: "Hello! I'm your project assistant. I know the current status of all 7 projects in your portfolio. Ask me anything - what to work on next, project status summaries, or cross-project insights.",
 };
 
-function createChatSessionId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function actionPayloadSummary(proposal: ProjectChatActionProposal): string {
-  if (proposal.action === PROJECT_CHAT_ACTIONS.SUGGEST_NAVIGATE_PROJECT) {
-    return `Route: ${proposal.payload.route}`;
-  }
-
-  return `Note: ${proposal.payload.note}`;
-}
-
 const ProjectChatDrawer: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const sessionIdRef = useRef<string>(createChatSessionId());
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ProjectChatMessage[]>([INITIAL_MESSAGE]);
-  const [pendingActions, setPendingActions] = useState<ProjectChatActionProposal[]>([]);
-  const [pendingById, setPendingById] = useState<Record<string, boolean>>({});
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -57,21 +28,8 @@ const ProjectChatDrawer: React.FC = () => {
     setLoading(true);
 
     try {
-      const pageContext = collectProjectChatPageContext(location.pathname);
-      const response = await getProjectChatResponse(
-        messages,
-        userMessage,
-        pageContext,
-        sessionIdRef.current,
-      );
-
-      setMessages((prev) => [...prev, { role: "assistant", text: response.text }]);
-
-      if (response.kind === "action_proposal") {
-        setPendingActions((prev) =>
-          prev.some((item) => item.id === response.proposal.id) ? prev : [...prev, response.proposal],
-        );
-      }
+      const responseText = await getProjectChatResponse(messages, userMessage);
+      setMessages((prev) => [...prev, { role: "assistant", text: responseText }]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -79,46 +37,6 @@ const ProjectChatDrawer: React.FC = () => {
       ]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleActionDecision = async (
-    proposal: ProjectChatActionProposal,
-    decision: "confirm" | "reject",
-  ) => {
-    if (pendingById[proposal.id]) return;
-
-    setPendingById((prev) => ({ ...prev, [proposal.id]: true }));
-    try {
-      const result = await confirmProjectChatAction({
-        proposalId: proposal.id,
-        decision,
-        expectedAction: proposal.action,
-        sessionId: sessionIdRef.current,
-        idempotencyKey: createChatIdempotencyKey(),
-      });
-
-      setPendingActions((prev) => prev.filter((item) => item.id !== proposal.id));
-      setMessages((prev) => [...prev, { role: "assistant", text: result.message }]);
-
-      const navigateTo =
-        result.action === PROJECT_CHAT_ACTIONS.SUGGEST_NAVIGATE_PROJECT &&
-        typeof result.result?.navigateTo === "string"
-          ? result.result.navigateTo
-          : null;
-      if (navigateTo && decision === "confirm") {
-        navigate(navigateTo);
-      }
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "I couldn't process that action confirmation. Please try again.",
-        },
-      ]);
-    } finally {
-      setPendingById((prev) => ({ ...prev, [proposal.id]: false }));
     }
   };
 
@@ -199,33 +117,6 @@ const ProjectChatDrawer: React.FC = () => {
               </div>
             </div>
           )}
-
-          {pendingActions.map((proposal) => (
-            <div key={proposal.id} className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 space-y-2">
-              <div className="text-xs uppercase tracking-wide text-amber-300/90">Pending Action</div>
-              <div className="text-sm font-semibold text-amber-100">{proposal.title}</div>
-              <div className="text-xs text-amber-200/80">{proposal.reason}</div>
-              <div className="text-[11px] text-amber-200/80">{actionPayloadSummary(proposal)}</div>
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleActionDecision(proposal, "confirm")}
-                  disabled={pendingById[proposal.id]}
-                  className="rounded-md bg-emerald-700/80 hover:bg-emerald-600 disabled:opacity-50 px-2.5 py-1.5 text-xs text-white"
-                >
-                  Confirm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleActionDecision(proposal, "reject")}
-                  disabled={pendingById[proposal.id]}
-                  className="rounded-md bg-slate-700 hover:bg-slate-600 disabled:opacity-50 px-2.5 py-1.5 text-xs text-slate-200"
-                >
-                  Reject
-                </button>
-              </div>
-            </div>
-          ))}
 
           <div ref={messagesEndRef} />
         </div>

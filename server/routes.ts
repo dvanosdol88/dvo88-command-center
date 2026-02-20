@@ -5,12 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { AI_APP_ID } from "../src/config/ai.js";
-import { PROJECT_CHAT_ACTIONS } from "../src/config/projectChat.js";
 import { createAiRouter } from "./services/ai-router.js";
-import {
-  maybeCreateProjectActionProposal,
-  resolveProjectActionProposal,
-} from "./services/project-chat-actions.js";
 import {
   applyGithubPushWebhookUpdate,
   getProjectLastUpdatedSnapshot,
@@ -63,50 +58,6 @@ const chatSchema = z.object({
     .min(1),
   provider: z.enum(["gemini", "openai", "anthropic"]).optional(),
   context: z.enum(["vendors", "projects"]).optional(),
-  sessionId: z.string().min(8).max(120).optional(),
-  projectPageContext: z
-    .object({
-      route: z.string().min(1).max(200),
-      view: z.enum([
-        "command_center_dashboard",
-        "project_detail",
-        "legacy_project_dashboard",
-        "unknown",
-      ]),
-      selectedProject: z
-        .object({
-          slug: z.string().min(1),
-          name: z.string().min(1),
-          status: z.enum(["green", "yellow", "red"]),
-          phase: z.enum(["discovery", "build", "hardening", "launch", "maintenance", "paused"]),
-        })
-        .nullable(),
-      visibleProjects: z
-        .array(
-          z.object({
-            slug: z.string().min(1),
-            name: z.string().min(1),
-            status: z.enum(["green", "yellow", "red"]),
-            phase: z.enum(["discovery", "build", "hardening", "launch", "maintenance", "paused"]),
-          }),
-        )
-        .max(20),
-      visibleProjectsSummary: z.string().min(1).max(1000),
-    })
-    .optional(),
-});
-
-const actionConfirmSchema = z.object({
-  sessionId: z.string().min(8).max(120),
-  proposalId: z.string().min(8).max(120),
-  decision: z.enum(["confirm", "reject"]),
-  expectedAction: z
-    .enum([
-      PROJECT_CHAT_ACTIONS.SUGGEST_NAVIGATE_PROJECT,
-      PROJECT_CHAT_ACTIONS.MARK_PROJECT_FOCUS,
-    ])
-    .optional(),
-  idempotencyKey: z.string().min(8).max(120),
 });
 
 export function registerRoutes(app: Express) {
@@ -188,37 +139,6 @@ export function registerRoutes(app: Express) {
       if (!parsed.success) {
         return res.status(400).json({ ok: false, error: parsed.error.message });
       }
-      const lastUserMessage = [...parsed.data.messages]
-        .reverse()
-        .find((message) => message.role === "user")
-        ?.content.trim();
-
-      if (parsed.data.context === "projects" && parsed.data.sessionId && lastUserMessage) {
-        const proposal = maybeCreateProjectActionProposal({
-          sessionId: parsed.data.sessionId,
-          userMessage: lastUserMessage,
-          pageContext: parsed.data.projectPageContext as any,
-        });
-
-        if (proposal) {
-          return res.json({
-            ok: true,
-            response: {
-              message: {
-                role: "assistant",
-                content: proposal.assistantText,
-              },
-              provider: "project-action-registry",
-              model: "action-proposal",
-            },
-            chatResult: {
-              kind: "action_proposal",
-              assistantText: proposal.assistantText,
-              actionProposal: proposal.proposal,
-            },
-          });
-        }
-      }
 
       const systemPromptExtra =
         parsed.data.context === "projects" ? buildProjectSystemPrompt() : undefined;
@@ -235,7 +155,7 @@ export function registerRoutes(app: Express) {
       const response = await withOverallTimeout(
         router.chat({
           appId: AI_APP_ID,
-          messages: parsed.data.messages as any,
+          messages: parsed.data.messages,
         }),
         overallTimeoutMs,
         "route:/api/ai/chat",
@@ -246,36 +166,7 @@ export function registerRoutes(app: Express) {
         `[api] /api/ai/chat ok provider=${response.provider ?? "unknown"} model=${response.model ?? "unknown"} ms=${Date.now() - startedAt}`,
       );
 
-      res.json({
-        ok: true,
-        response,
-        chatResult: {
-          kind: "assistant",
-          assistantText: response.message.content,
-        },
-      });
-    }),
-  );
-
-  app.post(
-    "/api/ai/chat/action/confirm",
-    asyncRoute(async (req, res) => {
-      const parsed = actionConfirmSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({ ok: false, error: parsed.error.message });
-      }
-
-      const actionResult = resolveProjectActionProposal({
-        sessionId: parsed.data.sessionId,
-        proposalId: parsed.data.proposalId,
-        decision: parsed.data.decision,
-        expectedAction: parsed.data.expectedAction,
-        idempotencyKey: parsed.data.idempotencyKey,
-      });
-      res.json({
-        ok: true,
-        actionResult,
-      });
+      res.json({ ok: true, response });
     }),
   );
 
