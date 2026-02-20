@@ -1388,6 +1388,17 @@
                 </tr>
 
                 <tr class="category-row">
+                    <td colspan="5">OBSERVABILITY / ERROR TRACKING</td>
+                </tr>
+                <tr>
+                    <td class="tool-name">Sentry</td>
+                    <td><span class="has">✓ dvo88</span></td>
+                    <td><span class="no">—</span></td>
+                    <td><span class="no">—</span></td>
+                    <td><span class="no">—</span></td>
+                </tr>
+
+                <tr class="category-row">
                     <td colspan="5">AGENTIC FEATURES</td>
                 </tr>
                 <tr>
@@ -1555,6 +1566,57 @@
             <strong>The emerging pattern:</strong> Every AI provider is racing to add file access, browser control,
             and agentic capabilities. The "agent" is increasingly just the model + whatever tools you give it.
             The interface (web, desktop, terminal, IDE) is becoming secondary to the MCP servers and plugins you configure.
+        </div>
+    </div>
+
+    <!-- Sentry Error Tracking -->
+    <div class="section">
+        <h2>🛡️ Sentry Error Tracking & AI Triage</h2>
+        <p style="color:#aaa;margin-bottom:16px;">Added February 20, 2026 — live on dvo88.com</p>
+
+        <div class="instructions-grid">
+            <div class="instruction-card d-drive">
+                <h3>📡 Setup</h3>
+                <div class="instruction-content">
+                    <div class="content-preview">
+                        <ul>
+                            <li><strong>Sentry org:</strong> <code>dvo-inc</code> &nbsp;|&nbsp; <strong>Project:</strong> <code>dvo88</code></li>
+                            <li><strong>SDKs:</strong> <code>@sentry/react@10.39.0</code> (frontend) + <code>@sentry/node@10.39.0</code> (backend)</li>
+                            <li><strong>Frontend init:</strong> <code>src/sentry.ts</code> — browser tracing + session replay (10% normal / 100% on error)</li>
+                            <li><strong>Backend init:</strong> <code>server/sentry.ts</code> — Express error handler via <code>Sentry.setupExpressErrorHandler()</code></li>
+                            <li><strong>DSN:</strong> Vercel env vars — <code>VITE_SENTRY_DSN</code> (frontend) + <code>SENTRY_DSN</code> (backend)</li>
+                            <li><strong>Enabled:</strong> Production only</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-card c-drive">
+                <h3>🤖 AI Triage Panel</h3>
+                <div class="instruction-content">
+                    <div class="content-preview">
+                        <ul>
+                            <li><strong>Webhook:</strong> <code>POST /api/sentry-webhook</code> — HMAC signature verification</li>
+                            <li><strong>API:</strong> <code>GET /api/sentry-events</code> — returns in-memory triaged events (capped at 50)</li>
+                            <li><strong>UI:</strong> <code>ErrorTriagePanel</code> component — severity-colored cards, expand/collapse, 30s polling</li>
+                            <li><strong>AI triage:</strong> Each error auto-analyzed for severity, impact, root cause, and suggested fix</li>
+                            <li><strong>Nav:</strong> ShieldAlert icon in Command Center sidebar (before Settings)</li>
+                            <li><strong>Sentry permalink:</strong> Each card links back to the full Sentry issue</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="future-note">
+            <h4>🔮 Future: Expand to All Apps</h4>
+            <p>
+                <strong>dvo88:</strong> ✅ Sentry active + AI triage panel live<br>
+                <strong>ai-leo:</strong> ⬜ Not yet set up<br>
+                <strong>672 Elm Street:</strong> ⬜ Not yet set up<br>
+                <strong>RIA Builder:</strong> ⬜ Not yet set up<br>
+                <strong>ai-core v0.2.0:</strong> Will add <code>onProviderError</code> hook to feed Sentry + triage panel from all apps via shared router.
+            </p>
         </div>
     </div>
 
