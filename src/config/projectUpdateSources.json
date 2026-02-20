@@ -1,0 +1,16 @@
+{
+  "sources": [
+    {
+      "slug": "dvo88-hub",
+      "githubRepo": "dvanosdol88/dvo88-command-center"
+    },
+    {
+      "slug": "ria-marketing",
+      "githubRepo": "dvanosdol88/ria-marketing-page"
+    },
+    {
+      "slug": "ai-core",
+      "githubRepo": "dvanosdol88/ai-core"
+    }
+  ]
+}

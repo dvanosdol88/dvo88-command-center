@@ -22,7 +22,19 @@ This repo deploys to [dvo88.com](https://dvo88.com) via Vercel.
 3. RIA Builder - [riabuilder.dvo88.com](https://riabuilder.dvo88.com)
 
 ### Project Data
-All project status data is managed in `src/config/projects.ts`. Update this file to change project statuses, roadmaps, and known issues.
+Base project status data is managed in `src/config/projects.ts`.
+Dynamic last-updated overrides are written to `src/config/projectLastUpdatedOverrides.json`.
+
+### Scheduled Last-Updated Sync
+- Source mapping for sync is `src/config/projectUpdateSources.json`.
+- `.github/workflows/sync-project-last-updated.yml` runs hourly and on manual dispatch, then executes `scripts/sync-project-last-updated.mjs`.
+- The script queries GitHub commits for configured repos and updates `src/config/projectLastUpdatedOverrides.json`.
+- Workflow auth assumes GitHub Actions default `GITHUB_TOKEN` is available with `contents: write` permission (no extra secret required unless you choose to override token behavior).
+
+### Webhook Fast Path
+- `POST /api/projects/github-webhook` accepts GitHub `push` events and updates in-memory timestamp overrides immediately.
+- `GET /api/projects/last-updated` returns merged timestamps (base config + committed overrides + in-memory webhook overrides) for card rendering.
+- Set `GITHUB_WEBHOOK_SECRET` to enforce `x-hub-signature-256` verification for webhook requests.
 
 ### AI Configuration
 AI routing is configured in `src/config/ai.ts`. The project assistant context is built in `server/services/project-context.ts`.

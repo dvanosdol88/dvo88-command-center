@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { PROJECTS, type ProjectStatus } from "../src/config/projects";
+import { useProjectLastUpdated } from "../src/hooks/useProjectLastUpdated";
+import { formatProjectTimestamp, parseProjectTimestamp } from "../src/utils/projectDateTime";
 import {
   Server,
   Clock,
@@ -11,7 +13,7 @@ import {
 } from "lucide-react";
 import ProjectChatDrawer from "./ProjectChatDrawer";
 
-/* ── helpers ── */
+/* helpers */
 const statusLabel: Record<ProjectStatus, string> = {
   green: "Healthy",
   yellow: "Warning",
@@ -32,26 +34,25 @@ const statusDot: Record<ProjectStatus, string> = {
 
 const formatPhase = (p: string) => p.charAt(0).toUpperCase() + p.slice(1);
 
-function formatDate(d: string) {
-  const [y, m, day] = d.split("-").map(Number);
-  const parsed = new Date(y, m - 1, day);
-  if (isNaN(parsed.getTime())) return d;
-  return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
 function daysSince(d: string) {
-  const [y, m, day] = d.split("-").map(Number);
-  const parsed = new Date(y, m - 1, day);
+  const parsed = parseProjectTimestamp(d);
+  if (!parsed) return 0;
   return Math.floor((Date.now() - parsed.getTime()) / 86400000);
 }
 
-/* ── summary metrics ── */
-function computeMetrics() {
+/* summary metrics */
+function computeMetrics(resolveLastUpdated: (slug: string, fallback: string) => string) {
   const counts = { green: 0, yellow: 0, red: 0 };
   PROJECTS.forEach((p) => counts[p.status]++);
 
-  const mostRecent = [...PROJECTS].sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated))[0];
-  const lastDeploy = mostRecent ? daysSince(mostRecent.lastUpdated) : 0;
+  const mostRecent = [...PROJECTS].sort((a, b) => {
+    const aTime = parseProjectTimestamp(resolveLastUpdated(a.slug, a.lastUpdated))?.getTime() ?? 0;
+    const bTime = parseProjectTimestamp(resolveLastUpdated(b.slug, b.lastUpdated))?.getTime() ?? 0;
+    return bTime - aTime;
+  })[0];
+  const lastDeploy = mostRecent
+    ? daysSince(resolveLastUpdated(mostRecent.slug, mostRecent.lastUpdated))
+    : 0;
 
   const totalIssues = PROJECTS.reduce((n, p) => n + p.knownIssues.length, 0);
 
@@ -65,15 +66,14 @@ function computeMetrics() {
   };
 }
 
-/* ══════════════════════════════════════════════════════════
-   CommandCenter — dashboard content for Concept A
-   ══════════════════════════════════════════════════════════ */
+/* CommandCenter dashboard content */
 const CommandCenter: React.FC = () => {
-  const m = computeMetrics();
+  const { resolveLastUpdated } = useProjectLastUpdated(PROJECTS);
+  const m = computeMetrics(resolveLastUpdated);
 
   return (
     <>
-      {/* ── Summary Strip ── */}
+      {/* Summary Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <MetricCard icon={Server} label="Total Projects" value={String(m.total)} accent="text-lime-400" />
         <MetricCard icon={Rocket} label="Last Deploy" value={m.lastDeploy} accent="text-emerald-400" />
@@ -81,13 +81,15 @@ const CommandCenter: React.FC = () => {
         <MetricCard icon={Clock} label="Warnings" value={String(m.warnings)} accent="text-amber-400" />
       </div>
 
-      {/* ── Project Cards Grid ── */}
+      {/* Project Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {PROJECTS.map((project) => (
-          <article
-            key={project.slug}
-            className="group bg-[#131a2b]/80 border border-slate-700/50 rounded-xl p-5 hover:border-lime-500/40 hover:-translate-y-0.5 transition-all duration-200"
-          >
+        {PROJECTS.map((project) => {
+          const lastUpdated = resolveLastUpdated(project.slug, project.lastUpdated);
+          return (
+            <article
+              key={project.slug}
+              className="group bg-[#131a2b]/80 border border-slate-700/50 rounded-xl p-5 hover:border-lime-500/40 hover:-translate-y-0.5 transition-all duration-200"
+            >
             {/* Header row */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
@@ -132,7 +134,7 @@ const CommandCenter: React.FC = () => {
             {/* Footer */}
             <div className="flex items-center justify-between pt-3 border-t border-slate-700/40">
               <span className="text-xs text-slate-500">
-                {formatPhase(project.phase)} · Updated {formatDate(project.lastUpdated)}
+                {formatPhase(project.phase)} - Updated {formatProjectTimestamp(lastUpdated)}
               </span>
               <Link
                 to={`/project/${project.slug}`}
@@ -142,7 +144,8 @@ const CommandCenter: React.FC = () => {
               </Link>
             </div>
           </article>
-        ))}
+          );
+        })}
       </div>
 
       <ProjectChatDrawer />
@@ -150,7 +153,7 @@ const CommandCenter: React.FC = () => {
   );
 };
 
-/* ── MetricCard sub-component ── */
+/* MetricCard sub-component */
 interface MetricCardProps {
   icon: React.FC<{ size?: number }>;
   label: string;
@@ -171,3 +174,4 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon: Icon, label, value, accen
 );
 
 export default CommandCenter;
+

@@ -15,6 +15,11 @@ import {
   maybeCreateProjectActionProposal,
   resolveProjectActionProposal,
 } from "./services/project-chat-actions.js";
+import {
+  applyGithubPushWebhookUpdate,
+  getProjectLastUpdatedSnapshot,
+  verifyGithubWebhookSignature,
+} from "./services/project-last-updated.js";
 import { buildProjectSystemPrompt } from "./services/project-context.js";
 
 const require = createRequire(import.meta.url);
@@ -154,6 +159,56 @@ export function registerRoutes(app: Express) {
       },
     });
   });
+
+  app.get("/api/projects/last-updated", (_req, res) => {
+    res.json({
+      ok: true,
+      data: getProjectLastUpdatedSnapshot(),
+    });
+  });
+
+  app.post(
+    "/api/projects/github-webhook",
+    asyncRoute(async (req, res) => {
+      const signatureHeader = req.header("x-hub-signature-256") ?? undefined;
+      const eventName = (req.header("x-github-event") ?? "").toLowerCase();
+      const secret = process.env.GITHUB_WEBHOOK_SECRET;
+      const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+
+      const signatureValid = verifyGithubWebhookSignature(rawBody, signatureHeader, secret);
+      if (!signatureValid) {
+        return res.status(401).json({ ok: false, error: "Invalid webhook signature" });
+      }
+
+      if (eventName === "ping") {
+        return res.json({ ok: true, event: "ping", acknowledgedAt: new Date().toISOString() });
+      }
+
+      if (eventName !== "push") {
+        return res.status(202).json({
+          ok: true,
+          ignored: true,
+          reason: "unsupported_event",
+          event: eventName || "unknown",
+        });
+      }
+
+      const result = applyGithubPushWebhookUpdate(req.body as any);
+      if (!result.updated) {
+        return res.status(202).json({
+          ok: true,
+          ignored: true,
+          ...result,
+        });
+      }
+
+      return res.json({
+        ok: true,
+        result,
+        data: getProjectLastUpdatedSnapshot(),
+      });
+    }),
+  );
 
   app.post(
     "/api/ai/chat",

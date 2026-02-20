@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { PROJECTS, ProjectStatus } from "../src/config/projects";
+import { useProjectLastUpdated } from "../src/hooks/useProjectLastUpdated";
+import { formatProjectTimestamp } from "../src/utils/projectDateTime";
 import ProjectChatDrawer from "./ProjectChatDrawer";
 import SharedLayout from "./SharedLayout";
 
@@ -12,25 +14,9 @@ const statusColorClass: Record<ProjectStatus, string> = {
 
 const formatPhase = (phase: string) => phase.charAt(0).toUpperCase() + phase.slice(1);
 
-const formatLastUpdated = (dateValue: string) => {
-  const [yearStr, monthStr, dayStr] = dateValue.split("-");
-  const year = Number(yearStr);
-  const month = Number(monthStr);
-  const day = Number(dayStr);
-  const parsed =
-    Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
-      ? new Date(year, month - 1, day)
-      : new Date(dateValue);
-  if (Number.isNaN(parsed.getTime())) {
-    return dateValue;
-  }
-  return parsed.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-};
-
 const ProjectDashboard: React.FC = () => {
+  const { resolveLastUpdated } = useProjectLastUpdated(PROJECTS);
+
   return (
     <SharedLayout>
       <div className="max-w-6xl mx-auto px-6">
@@ -50,6 +36,7 @@ const ProjectDashboard: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {PROJECTS.map((project) => {
+              const lastUpdated = resolveLastUpdated(project.slug, project.lastUpdated);
               const displayedStack = project.techStack.slice(0, 4);
               const overflowCount = Math.max(project.techStack.length - displayedStack.length, 0);
 
@@ -110,7 +97,7 @@ const ProjectDashboard: React.FC = () => {
 
                   <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
                     <span className="text-xs text-slate-500 dark:text-slate-400">
-                      Last updated: {formatLastUpdated(project.lastUpdated)}
+                      Last updated: {formatProjectTimestamp(lastUpdated)}
                     </span>
                     <Link
                       to={`/project/${project.slug}`}
