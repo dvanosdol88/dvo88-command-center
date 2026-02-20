@@ -1,3 +1,5 @@
+import "./sentry.js";  // Must be first import — initializes error tracking
+import * as Sentry from "@sentry/node";
 import express from "express";
 import type { Request, Response } from "express";
 import { registerRoutes } from "./routes.js";
@@ -15,6 +17,9 @@ app.use(
 app.use(express.urlencoded({ extended: false, limit: "1mb" }));
 
 registerRoutes(app);
+
+// Sentry error handler — must be after routes, before any other error handlers
+Sentry.setupExpressErrorHandler(app);
 
 const isVercel = !!process.env.VERCEL;
 if (!isVercel) {

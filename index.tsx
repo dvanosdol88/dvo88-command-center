@@ -1,3 +1,4 @@
+import './src/sentry';  // Must be first import — initializes error tracking
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
