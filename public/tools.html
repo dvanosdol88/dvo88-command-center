@@ -952,75 +952,109 @@
 
     <!-- Instruction Files Section -->
     <div class="section">
-        <h2>📄 Instruction Files (.md)</h2>
+        <h2>📄 Instruction Files (.md) — v3 Architecture</h2>
         <div class="instructions-grid">
-            <!-- D: Drive (Project) -->
+            <!-- Layer 1: Canonical Base -->
             <div class="instruction-card d-drive">
-                <h3>📁 D:\ (Development Drive - Project Level)</h3>
+                <h3>📁 Layer 1: Canonical Base (ALL agents read this)</h3>
                 <div class="file-list">
                     <div class="file-item">
-                        <span class="path">D:\CLAUDE.md</span>
-                        <span class="agent claude">Claude Desktop</span>
-                    </div>
-                    <div class="file-item">
-                        <span class="path">D:\GEMINI.md</span>
-                        <span class="agent gemini">Gemini CLI</span>
-                    </div>
-                    <div class="file-item">
                         <span class="path">D:\AGENTS.md</span>
-                        <span class="agent codex">Codex CLI</span>
+                        <span class="agent codex" style="background:#666;color:#fff">All Agents</span>
                     </div>
                 </div>
                 <div class="instruction-content">
-                    <h4>Shared Content (202 lines)</h4>
+                    <h4>AGENTS.md v3 (~130 lines) — Single Source of Truth</h4>
                     <div class="content-preview">
                         <ul>
-                            <li>Core Principles (Config-Driven, Loosely Coupled, etc.)</li>
+                            <li>Core Architecture Principles (Config-Driven, Loosely Coupled, etc.)</li>
                             <li>Safety Rules (Rule #1: Don't Break, Rule #2: Test First)</li>
-                            <li>After Making Changes Checklist (TEST → CHECK → COMMIT → DOC)</li>
+                            <li>Operational Rules (Safety → Plan → Architecture → Git → Verify)</li>
                             <li>Browser & UI Tools (YOU HAVE THESE - USE THEM!)</li>
+                            <li>After Making Changes Checklist (TEST → CHECK → COMMIT → DOC)</li>
                             <li>Task Completion Format (✅ DONE, 📍 STATE, ⚠️ NOTES, 🔗 LINKS)</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- C: Drive (User Home) -->
+            <!-- Layer 2: Agent-Specific -->
             <div class="instruction-card c-drive">
-                <h3>📁 C:\Users\david\ (User Home - Global)</h3>
+                <h3>📁 Layer 2: Agent-Specific (small, only differences)</h3>
                 <div class="file-list">
                     <div class="file-item">
-                        <span class="path">~/.claude/CLAUDE.md</span>
-                        <span class="agent claude">Claude Desktop</span>
+                        <span class="path">D:\CLAUDE.md</span>
+                        <span class="agent claude">Claude Code</span>
+                        <span style="color:#888;font-size:0.85em;margin-left:8px">~27 lines</span>
                     </div>
                     <div class="file-item">
-                        <span class="path">~/.gemini/GEMINI.md</span>
+                        <span class="path">D:\GEMINI.md</span>
                         <span class="agent gemini">Gemini CLI</span>
-                    </div>
-                    <div class="file-item">
-                        <span class="path">~/.codex/codex.md</span>
-                        <span class="agent codex">Codex CLI</span>
+                        <span style="color:#888;font-size:0.85em;margin-left:8px">~18 lines</span>
                     </div>
                 </div>
                 <div class="instruction-content">
-                    <h4>Agent-Specific Extras</h4>
+                    <h4>Agent-Only Additions (no base rules duplicated)</h4>
                     <div class="content-preview">
                         <ul>
-                            <li><strong>Gemini:</strong> +Google Workspace MCP, +Firebase MCP</li>
-                            <li><strong>Claude:</strong> Standard tool list</li>
-                            <li><strong>Codex:</strong> Standard tool list</li>
+                            <li><strong>Claude:</strong> CLI persistence rules, bypass permissions, skills reference</li>
+                            <li><strong>Gemini:</strong> +Google Workspace MCP, +Firebase MCP, YOLO mode</li>
+                            <li><strong>Codex:</strong> Reads AGENTS.md directly (no separate file needed)</li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer 3: Project-Specific -->
+            <div class="instruction-card d-drive">
+                <h3>📁 Layer 3: Project-Specific (tiny, context only)</h3>
+                <div class="file-list">
+                    <div class="file-item">
+                        <span class="path">D:\RIA\RIA-builder\CLAUDE.md</span>
+                        <span style="color:#888;font-size:0.85em">37 lines — tech stack, key files, data locations</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">D:\RIA\RIA-marketing-page\CLAUDE.md</span>
+                        <span style="color:#888;font-size:0.85em">TBD — needs creation</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills & Backups -->
+            <div class="instruction-card c-drive">
+                <h3>🛡️ Skills & Settings Backup (D:\.cursor-doctor\)</h3>
+                <div class="file-list">
+                    <div class="file-item">
+                        <span class="path">skills\cursor-settings-guardian.md</span>
+                        <span style="color:#888;font-size:0.85em">Backup/restore all Cursor settings</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">skills\md-sync-agent.md</span>
+                        <span style="color:#888;font-size:0.85em">Keep .md files uniform and in sync</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">backups\settings.json.bak</span>
+                        <span style="color:#888;font-size:0.85em">Cursor IDE settings backup</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">backups\tasks.json.bak</span>
+                        <span style="color:#888;font-size:0.85em">Terminal launcher backup (10 terminals)</span>
+                    </div>
+                    <div class="file-item">
+                        <span class="path">backups\keybindings.json.bak</span>
+                        <span style="color:#888;font-size:0.85em">Custom keybindings backup</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="future-note">
-            <h4>💡 Future Feature: Auto-Sync for keeping .md files current</h4>
+            <h4>💡 Design Principle: CSS-like Cascade</h4>
             <p>
-                <strong>Option A (Pull):</strong> HTML fetches .md files via JavaScript <code>fetch()</code> — requires a local server or file:// permissions.<br>
-                <strong>Option B (Push):</strong> A script watches .md files and regenerates HTML on change — <code>chokidar</code> + Node.js.<br>
-                <strong>Option C (Simplest):</strong> VS Code task that runs on save to rebuild this HTML from .md files.
+                <strong>Layer 1 (Base):</strong> AGENTS.md — shared rules for all agents, like a CSS reset.<br>
+                <strong>Layer 2 (Agent):</strong> CLAUDE.md / GEMINI.md — agent-specific overrides, like component styles.<br>
+                <strong>Layer 3 (Project):</strong> Project CLAUDE.md — project context, like page-specific styles.<br>
+                <strong>Skills:</strong> D:\.cursor-doctor\skills\ — reusable skill files loaded on demand.
             </p>
         </div>
     </div>
@@ -1816,7 +1850,7 @@
     </div><!-- END tab-shortcuts -->
 
     <footer>
-        Last updated: February 15, 2026 | All instruction files synced with unified rules<br>
+        Last updated: February 20, 2026 | v3 architecture: AGENTS.md canonical base + slim agent files + .cursor-doctor skills<br>
         <em>Generated by Claude Desktop with Desktop Commander (that's me! 🟠)</em>
     </footer>
     <script>
